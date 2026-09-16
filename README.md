@@ -119,31 +119,30 @@ Entidades principales del sistema:
 ## 📁 Estructura del Proyecto
 mirai-cafe/
 ├── backend/
-│ ├── src/main/java/com/miraicafe/
-│ │ ├── controller/
-│ │ ├── service/
-│ │ ├── repository/
-│ │ ├── entity/
-│ │ ├── dto/
-│ │ ├── security/
-│ │ ├── config/
-│ │ └── exception/
-│ ├── src/main/resources/
-│ │ └── application.properties
-│ └── pom.xml
+│   ├── src/main/java/com/miraicafe/
+│   │   ├── controller/
+│   │   ├── service/
+│   │   ├── repository/
+│   │   ├── entity/
+│   │   ├── dto/
+│   │   ├── security/
+│   │   ├── config/
+│   │   └── exception/
+│   ├── src/main/resources/
+│   │   └── application.properties
+│   └── pom.xml
 ├── frontend/
-│ ├── src/
-│ │ ├── pages/
-│ │ ├── components/
-│ │ ├── services/
-│ │ ├── context/
-│ │ └── routes/
-│ └── package.json
+│   ├── src/
+│   │   ├── pages/
+│   │   ├── components/
+│   │   ├── services/
+│   │   ├── context/
+│   │   └── routes/
+│   └── package.json
 ├── docs/
-│ ├── database.sql
-│ └── postman_collection.json
+│   ├── database.sql
+│   └── postman_collection.json
 └── README.md
-
 text
 
 ---
