@@ -117,6 +117,8 @@ Entidades principales del sistema:
 ---
 
 ## 📁 Estructura del Proyecto
+
+<pre>
 mirai-cafe/
 ├── backend/
 │   ├── src/main/java/com/miraicafe/
@@ -143,7 +145,7 @@ mirai-cafe/
 │   ├── database.sql
 │   └── postman_collection.json
 └── README.md
-
+</pre>
 ---
 
 ## ⚙️ Configuración y Ejecución
