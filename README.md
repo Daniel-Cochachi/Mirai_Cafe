@@ -143,7 +143,6 @@ mirai-cafe/
 │   ├── database.sql
 │   └── postman_collection.json
 └── README.md
-text
 
 ---
 
