@@ -1,0 +1,71 @@
+======================================================================
+              GUIA DE TRABAJO Y COMANDOS - MIRAI CAFE
+======================================================================
+
+Hay 2 formas de trabajar en el proyecto. ¡Elige la que necesites!
+
+----------------------------------------------------------------------
+MODO 1: PARA PROGRAMAR EN EL DIA A DIA (CAMBIOS EN VIVO INSTANTANEOS)
+----------------------------------------------------------------------
+Usa este modo cuando estes escribiendo codigo para ver los cambios 
+de inmediato con Ctrl + S sin esperar que Docker recompile:
+
+PASO 1: Levanta SOLO la Base de Datos en Docker (desde la raiz):
+   docker compose up mysql -d
+
+PASO 2: Corre el Backend en tu IDE:
+   - Abre el proyecto en tu editor (IntelliJ, VS Code, Eclipse).
+   - Abre BackendApplication.java y dale al boton verde "Play / Run".
+
+PASO 3: Corre el Frontend con Vite (recarga instantanea en 0.1s):
+   - Abre una terminal y escribe:
+     cd frontend
+     npm run dev
+   - Abre tu navegador en: http://localhost:5173
+
+----------------------------------------------------------------------
+MODO 2: PARA EXPONER, PROBAR TODO JUNTO O SUSTENTAR (TODO EN DOCKER)
+----------------------------------------------------------------------
+Usa este modo cuando quieras levantar todo el sistema completo 
+(MySQL + Backend + Frontend en Nginx) empaquetado como en produccion:
+
+ANTES: Asegurate de tener abierta la aplicacion Docker Desktop.
+Todos estos comandos se ejecutan en la carpeta raiz de Mirai_Cafe:
+
+1. POR PRIMERA VEZ (CONSTRUYE Y LEVANTA TODO):
+   docker compose up --build -d
+
+2. PARA APAGAR TODO (NO SE PIERDEN TUS DATOS):
+   docker compose down
+
+3. PARA VOLVER A ENCENDERLO (CUANDO YA LO CONSTRUISTE ANTES):
+   docker compose up -d
+
+4. CUANDO HACES CAMBIOS FINALES Y QUIERES PROBARLOS EN DOCKER:
+   docker compose up --build -d
+
+----------------------------------------------------------------------
+COMANDOS UTILES
+----------------------------------------------------------------------
+- Ver estado de los contenedores:
+  docker compose ps
+
+- Ver consola / errores en tiempo real:
+  Ver todo:             docker compose logs -f
+  Solo Spring Boot:     docker compose logs -f backend
+  Solo Base de Datos:   docker compose logs -f mysql
+  Solo Frontend Nginx:  docker compose logs -f frontend
+  (Para salir de la consola presiona Ctrl + C)
+
+- Resetear base de datos limpia a cero (borra datos de prueba):
+  docker compose down -v
+  docker compose up -d
+
+----------------------------------------------------------------------
+PUERTOS Y ENLACES
+----------------------------------------------------------------------
+- Frontend (React):   http://localhost:5173
+- Backend (API):      http://localhost:8080/api/v1
+- Health Check:       http://localhost:8080/api/v1/health
+- Base de Datos:      localhost:3307 (user: root / pass: root)
+======================================================================

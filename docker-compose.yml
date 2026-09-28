@@ -1,0 +1,62 @@
+services:
+# 1. Base de datos MySQL 8
+  mysql:
+    image: mysql:8.0-debian
+    container_name: mirai_mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: mirai_cafe
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # Ejecuta automáticamente tu script SQL con las tablas y usuarios iniciales al crear el contenedor
+      - ./docs/script.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - mirai_network
+
+# 2. Backend Spring Boot (Java 21)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mirai_backend
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/mirai_cafe
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      PORT: 8080
+      JWT_SECRET: mirai-cafe-dev-secret-key-2026-very-long
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - mirai_network
+      
+  # 3. Frontend React (Vite + Nginx)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: mirai_frontend
+    restart: always
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    networks:
+      - mirai_network
+volumes:
+  mysql_data:
+networks:
+  mirai_network:
+    driver: bridge
