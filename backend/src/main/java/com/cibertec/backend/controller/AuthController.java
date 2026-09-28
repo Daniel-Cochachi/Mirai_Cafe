@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.cibertec.backend.dto.auth.AuthResponse;
 import com.cibertec.backend.dto.auth.LoginRequest;
+import com.cibertec.backend.dto.auth.ActualizarPerfilRequest;
+import com.cibertec.backend.dto.auth.CambiarPasswordRequest;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -53,5 +55,25 @@ public class AuthController {
         return ResponseEntity.ok(
                 UsuarioResponse.from(usuario)
         );
+    }
+
+    // actualizar perfil
+    @PatchMapping("/me")
+    public ResponseEntity<UsuarioResponse> actualizarPerfil(
+            @AuthenticationPrincipal Usuario usuario,
+            @Valid @RequestBody ActualizarPerfilRequest request
+    ) {
+        Usuario usuarioActualizado = authService.actualizarPerfil(usuario.getId(), request);
+        return ResponseEntity.ok(UsuarioResponse.from(usuarioActualizado));
+    }
+
+     // cambiar contraseña
+    @PatchMapping("/me/password")
+    public ResponseEntity<Void> cambiarPassword(
+            @AuthenticationPrincipal Usuario usuario,
+            @Valid @RequestBody CambiarPasswordRequest request
+    ) {
+        authService.cambiarPassword(usuario.getId(), request);
+        return ResponseEntity.noContent().build();
     }
 }

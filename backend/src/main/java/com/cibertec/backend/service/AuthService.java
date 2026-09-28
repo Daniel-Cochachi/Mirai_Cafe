@@ -13,6 +13,9 @@ import com.cibertec.backend.dto.auth.AuthResponse;
 import com.cibertec.backend.dto.auth.LoginRequest;
 import com.cibertec.backend.exception.CredencialesInvalidasException;
 import com.cibertec.backend.security.JwtService;
+import com.cibertec.backend.dto.auth.ActualizarPerfilRequest;
+import com.cibertec.backend.dto.auth.CambiarPasswordRequest;
+
 
 @Service
 @RequiredArgsConstructor
@@ -89,4 +92,34 @@ public class AuthService {
                 usuario.getRol().name()
         );
     }
+
+    // actualizar perfil (nombre)
+    @Transactional
+    public Usuario actualizarPerfil(Long usuarioId, ActualizarPerfilRequest request) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        usuario.setNombre(request.nombre().trim());
+        return usuarioRepository.save(usuario);
+    }
+
+    // cambiar password
+    @Transactional
+    public void cambiarPassword(Long usuarioId, CambiarPasswordRequest request) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        // 1. Validar que la contraseña actual ingresada coincida con la de la BD
+        boolean passwordCorrecto = passwordEncoder.matches(
+                request.passwordActual(),
+                usuario.getPassword()
+        );
+        if (!passwordCorrecto) {
+            throw new CredencialesInvalidasException("La contraseña actual es incorrecta");
+        }
+
+        // 2. Encriptar la nueva contraseña antes de guardarla
+        usuario.setPassword(passwordEncoder.encode(request.passwordNuevo()));
+        usuarioRepository.save(usuario);
+    }
+
 }
