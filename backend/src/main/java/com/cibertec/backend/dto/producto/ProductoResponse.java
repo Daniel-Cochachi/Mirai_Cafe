@@ -31,4 +31,5 @@ public record ProductoResponse(
                 producto.getFechaCreacion()
         );
     }
+
 }

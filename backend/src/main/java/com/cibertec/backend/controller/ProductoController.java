@@ -1,8 +1,8 @@
 package com.cibertec.backend.controller;
 
+import com.cibertec.backend.dto.producto.DisponibilidadRequest;
 import com.cibertec.backend.dto.producto.ProductoRequest;
 import com.cibertec.backend.dto.producto.ProductoResponse;
-import com.cibertec.backend.entity.Producto;
 import com.cibertec.backend.service.ProductoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,8 +20,8 @@ public class ProductoController {
     private final ProductoService productoService;
 
     @GetMapping
-    public List<ProductoResponse> listarTodos() {
-        return productoService.buscarTodos().stream().map(ProductoResponse::from).toList();
+    public List<ProductoResponse> listarTodos(@RequestParam(required = false) Long categoryId, @RequestParam(required = false) Boolean available, @RequestParam(required = false) String search) {
+        return productoService.buscarConFiltros(categoryId, available,search).stream().map(ProductoResponse::from).toList();
     }
 
     @GetMapping("/{id}")
@@ -44,5 +44,10 @@ public class ProductoController {
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         productoService.eliminar(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/availability")
+    public ProductoResponse actualizarDisponibilidad(@PathVariable Long id, @RequestBody DisponibilidadRequest request) {
+        return ProductoResponse.from(productoService.cambiarDisponibilidad(id, request.disponible()));
     }
 }

@@ -1,6 +1,8 @@
 package com.cibertec.backend.service;
 
 import com.cibertec.backend.entity.Categoria;
+import com.cibertec.backend.exception.NombreDuplicadoException;
+import com.cibertec.backend.exception.RecursoNoEncontradoException;
 import com.cibertec.backend.repository.CategoriaRepository;
 import com.cibertec.backend.repository.ProductoRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,12 +23,12 @@ public class CategoriaService {
     }
 
     public Categoria buscarPorId(Long id) {
-        return categoriaRepository.findById(id).orElseThrow(() -> new RuntimeException("Categoria no encontrada."));
+        return categoriaRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException("Categoria no encontrada."));
     }
 
     public Categoria guardar(Categoria categoria) {
         if (categoriaRepository.existsByNombre(categoria.getNombre())) {
-            throw new RuntimeException("Ya existe una categoria con este nombre.");
+            throw new NombreDuplicadoException("Ya existe una categoria con este nombre.");
         }
         return categoriaRepository.save(categoria);
     }
@@ -34,7 +36,7 @@ public class CategoriaService {
     public Categoria actualizar(Long id, Categoria categoriaActualizada) {
         String nombreActualizado = categoriaActualizada.getNombre();
         if (categoriaRepository.existsByNombre(nombreActualizado) && !Objects.equals(nombreActualizado, buscarPorId(id).getNombre())) {
-            throw new RuntimeException("Ya existe una categoria con este nombre.");
+            throw new NombreDuplicadoException("Ya existe una categoria con este nombre.");
         }
         Categoria categoriaAntigua = buscarPorId(id);
         categoriaAntigua.setNombre(categoriaActualizada.getNombre());

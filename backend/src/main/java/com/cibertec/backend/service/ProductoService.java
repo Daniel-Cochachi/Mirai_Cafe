@@ -3,9 +3,12 @@ package com.cibertec.backend.service;
 import com.cibertec.backend.dto.producto.ProductoRequest;
 import com.cibertec.backend.entity.Categoria;
 import com.cibertec.backend.entity.Producto;
+import com.cibertec.backend.exception.RecursoNoEncontradoException;
 import com.cibertec.backend.repository.CategoriaRepository;
 import com.cibertec.backend.repository.ProductoRepository;
+import com.cibertec.backend.specification.ProductoSpecifications;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,7 +25,7 @@ public class ProductoService {
     }
 
     public Producto buscarPorId(Long id) {
-        return productoRepository.findById(id).orElseThrow(() -> new RuntimeException("Producto no encontrado."));
+        return productoRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException("Producto no encontrado."));
     }
 
     public Producto guardar(ProductoRequest request) {
@@ -60,6 +63,21 @@ public class ProductoService {
 
     public void eliminar(Long id) {
         productoRepository.deleteById(id);
+    }
+
+    public Producto cambiarDisponibilidad(Long id, boolean disponibilidad) {
+        Producto productoAntiguo = buscarPorId(id);
+        productoAntiguo.setDisponible(disponibilidad);
+        return productoRepository.save(productoAntiguo);
+    }
+
+    public List<Producto> buscarConFiltros(Long categoriaId, Boolean disponible, String texto) {
+        Specification<Producto> spec = Specification
+                .where(ProductoSpecifications.tieneCategoria(categoriaId))
+                .and(ProductoSpecifications.estaDisponible(disponible))
+                .and(ProductoSpecifications.contieneTexto(texto));
+
+        return productoRepository.findAll(spec);
     }
 
 }
