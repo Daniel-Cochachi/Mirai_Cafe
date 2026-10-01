@@ -3,8 +3,6 @@ package com.cibertec.backend.specification;
 import com.cibertec.backend.entity.Producto;
 import org.springframework.data.jpa.domain.Specification;
 
-import java.util.Locale;
-
 public class ProductoSpecifications {
 
     public static Specification<Producto> tieneCategoria(Long categoriaId) {

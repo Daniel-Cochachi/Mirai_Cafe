@@ -6,6 +6,9 @@ import com.cibertec.backend.exception.RecursoNoEncontradoException;
 import com.cibertec.backend.repository.CategoriaRepository;
 import com.cibertec.backend.repository.ProductoRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,14 +21,17 @@ public class CategoriaService {
     private final CategoriaRepository categoriaRepository;
     private final ProductoRepository productoRepository;
 
+    @Cacheable(value = "categorias")
     public List<Categoria> listarTodas() {
         return categoriaRepository.findAll();
     }
 
+    @Cacheable(value = "categoria", key = "#id")
     public Categoria buscarPorId(Long id) {
         return categoriaRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException("Categoria no encontrada."));
     }
 
+    @CacheEvict(value = "categorias", allEntries = true)
     public Categoria guardar(Categoria categoria) {
         if (categoriaRepository.existsByNombre(categoria.getNombre())) {
             throw new NombreDuplicadoException("Ya existe una categoria con este nombre.");
@@ -33,6 +39,10 @@ public class CategoriaService {
         return categoriaRepository.save(categoria);
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "categoria", key = "#id"),
+            @CacheEvict(value = "categorias", allEntries = true)
+    })
     public Categoria actualizar(Long id, Categoria categoriaActualizada) {
         String nombreActualizado = categoriaActualizada.getNombre();
         if (categoriaRepository.existsByNombre(nombreActualizado) && !Objects.equals(nombreActualizado, buscarPorId(id).getNombre())) {
@@ -44,6 +54,10 @@ public class CategoriaService {
         return categoriaRepository.save(categoriaAntigua);
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "categoria", key = "#id"),
+            @CacheEvict(value = "categorias", allEntries = true)
+    })
     public void eliminar(Long id) {
 
         if (productoRepository.existsByCategoriaId(id)) {
