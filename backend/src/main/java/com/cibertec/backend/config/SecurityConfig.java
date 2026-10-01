@@ -72,6 +72,13 @@ public class SecurityConfig {
                                                                 }))
                                 .authorizeHttpRequests(auth -> auth
                                                 // Rutas públicas de autenticación
+                                                // Swagger / OpenAPI
+                                                .requestMatchers(
+                                                        "/swagger-ui/**",
+                                                        "/swagger-ui.html",
+                                                        "/v3/api-docs/**"
+                                                ).permitAll()
+
                                                 .requestMatchers(
                                                                 "/api/v1/auth/register",
                                                                 "/api/v1/auth/login")

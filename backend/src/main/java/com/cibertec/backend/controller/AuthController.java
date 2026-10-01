@@ -16,15 +16,28 @@ import com.cibertec.backend.dto.auth.AuthResponse;
 import com.cibertec.backend.dto.auth.LoginRequest;
 import com.cibertec.backend.dto.auth.ActualizarPerfilRequest;
 import com.cibertec.backend.dto.auth.CambiarPasswordRequest;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
+@Tag(
+        name = "Autenticación",
+        description = "Registro, login y administración del perfil propio"
+)
 public class AuthController {
 
     private final AuthService authService;
 
-    //register
+    @Operation(
+            summary = "Registrar cliente",
+            description = """
+                Registra un nuevo usuario con rol CLIENTE.
+                No requiere autenticación.
+                """
+    )
     @PostMapping("/register")
     public ResponseEntity<UsuarioResponse> registrar(
             @Valid @RequestBody RegistroRequest request
@@ -38,7 +51,13 @@ public class AuthController {
                 .body(response);
     }
 
-    //login
+    @Operation(
+            summary = "Iniciar sesión",
+            description = """
+                Valida el correo y la contraseña.
+                Devuelve un token JWT si las credenciales son correctas.
+                """
+    )
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(
             @Valid @RequestBody LoginRequest request
@@ -48,6 +67,10 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(
+            summary = "Consultar perfil propio",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     @GetMapping("/me")
     public ResponseEntity<UsuarioResponse> obtenerPerfil(
             @AuthenticationPrincipal Usuario usuario
@@ -57,7 +80,10 @@ public class AuthController {
         );
     }
 
-    // actualizar perfil
+    @Operation(
+            summary = "Actualizar perfil propio",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     @PatchMapping("/me")
     public ResponseEntity<UsuarioResponse> actualizarPerfil(
             @AuthenticationPrincipal Usuario usuario,
@@ -67,7 +93,10 @@ public class AuthController {
         return ResponseEntity.ok(UsuarioResponse.from(usuarioActualizado));
     }
 
-     // cambiar contraseña
+    @Operation(
+            summary = "Cambiar contraseña",
+            security = @SecurityRequirement(name = "bearerAuth")
+    )
     @PatchMapping("/me/password")
     public ResponseEntity<Void> cambiarPassword(
             @AuthenticationPrincipal Usuario usuario,
