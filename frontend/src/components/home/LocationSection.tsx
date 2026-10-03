@@ -54,10 +54,6 @@ export function LocationSection() {
                     {/* Información */}
                     <aside className="flex flex-col justify-between p-7 text-white sm:p-9 lg:p-10">
                         <div>
-                            <span className="inline-flex rounded-full border border-mirai-accent/30 bg-mirai-accent/10 px-3 py-1.5 text-xs font-semibold text-mirai-accent">
-                                Ubicación de demostración
-                            </span>
-
                             <span className="mt-8 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 text-mirai-accent">
                                 <MapPin
                                     size={27}

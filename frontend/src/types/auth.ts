@@ -32,7 +32,7 @@ export interface User {
     email: string
     rol: UserRole
     activo: boolean
-    fechaRegistro: string
+    fechaRegistro?: string
 }
 
 export interface ApiError {

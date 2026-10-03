@@ -36,8 +36,8 @@ export function Footer() {
                         to="/"
                         className="flex w-fit items-center gap-3"
                     >
-                        <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-mirai-accent text-white">
-                            <MiraiLogo size={31} />
+                        <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-mirai-surface-dark border border-white/15 shadow-sm transition-transform duration-200 hover:scale-105">
+                            <MiraiLogo size={36} />
                         </span>
 
                         <div>
