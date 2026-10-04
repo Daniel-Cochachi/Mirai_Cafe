@@ -8,11 +8,13 @@ import com.cibertec.backend.repository.CategoriaRepository;
 import com.cibertec.backend.repository.ProductoRepository;
 import com.cibertec.backend.specification.ProductoSpecifications;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProductoService {
@@ -72,6 +74,7 @@ public class ProductoService {
     }
 
     public List<Producto> buscarConFiltros(Long categoriaId, Boolean disponible, String texto) {
+        log.info(">>> Consultando productos en la base de datos");
         Specification<Producto> spec = Specification
                 .where(ProductoSpecifications.tieneCategoria(categoriaId))
                 .and(ProductoSpecifications.estaDisponible(disponible))
