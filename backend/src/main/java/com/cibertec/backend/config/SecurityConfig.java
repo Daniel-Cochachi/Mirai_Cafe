@@ -103,9 +103,10 @@ public class SecurityConfig {
                 CorsConfiguration configuration = new CorsConfiguration();
                 // Permitir el origen del Frontend (Vite suele usar 5173, Create-React-App
                 // suele usar 3000)
-                configuration.setAllowedOrigins(List.of(
+                configuration.setAllowedOriginPatterns(List.of(
                                 "http://localhost:5173",
-                                "http://localhost:3000"
+                                "http://localhost:3000",
+                                "https://*.vercel.app"
                 ));
                 // Métodos HTTP permitidos
                 configuration.setAllowedMethods(List.of(

@@ -1,8 +1,12 @@
 import axios from 'axios';
 
-// Cliente Axios compartido para todo el equipo (Ruta relativa)
+const API_URL = import.meta.env.VITE_API_URL
+    ? `${import.meta.env.VITE_API_URL}/api/v1`
+    : '/api/v1';
+
+// Cliente Axios compartido para todo el equipo
 const api = axios.create({
-    baseURL: '/api/v1',
+    baseURL: API_URL,
     headers: {
         'Content-Type': 'application/json',
     },
