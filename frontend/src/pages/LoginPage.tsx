@@ -11,8 +11,9 @@ import {
 import axios from 'axios'
 import { ArrowLeft } from 'lucide-react'
 
-import { useAuth } from '../context/AuthContext'
+import heroCafe from '../assets/hero-cafe.webp'
 import { MiraiLogo } from '../components/brand/MiraiLogo'
+import { useAuth } from '../context/AuthContext'
 
 import type {
     ApiError,
@@ -36,7 +37,6 @@ export function LoginPage() {
         event: FormEvent<HTMLFormElement>,
     ) => {
         event.preventDefault()
-
         setError('')
         setIsLoading(true)
 
@@ -58,69 +58,126 @@ export function LoginPage() {
     }
 
     return (
-        <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-mirai-cream px-4 py-10">
-            {/* Elementos decorativos del fondo */}
-            <div
-                aria-hidden="true"
-                className="absolute -left-32 -top-32 h-80 w-80 rounded-full bg-mirai-primary-soft"
-            />
+        <main className="grid min-h-screen bg-[#0a0a0a] lg:grid-cols-[1.1fr_0.9fr]">
+            {/* Panel de imagen */}
+            <section className="relative hidden min-h-screen overflow-hidden lg:block">
+                <img
+                    src={heroCafe}
+                    alt="Café preparado en Mirai Café"
+                    className="absolute inset-0 h-full w-full object-cover object-center"
+                />
 
-            <div
-                aria-hidden="true"
-                className="absolute -bottom-40 -right-32 h-96 w-96 rounded-full bg-amber-100/70"
-            />
+                {/* Oscurecimiento */}
+                <div className="absolute inset-0 bg-black/30" />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/15 via-transparent to-[#0a0a0a]" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-black/35" />
 
-            <section className="relative z-10 w-full max-w-md">
-                {/* Enlace al inicio */}
+                {/* Logo */}
                 <Link
                     to="/"
-                    className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-mirai-muted transition hover:text-mirai-primary"
+                    className="absolute left-10 top-10 z-20 flex w-fit items-center gap-3 transition hover:opacity-90"
                 >
-                    <ArrowLeft size={18} />
+                    <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-mirai-surface-dark/90 border border-white/15 shadow-sm backdrop-blur-sm transition-transform duration-200 hover:scale-105">
+                        <MiraiLogo size={34} />
+                    </span>
 
-                    Volver al inicio
+                    <div>
+                        <p className="text-lg font-bold leading-none text-white">
+                            Mirai Café
+                        </p>
+
+                        <p className="mt-1 text-xs text-white/45">
+                            Fresco y delicioso
+                        </p>
+                    </div>
                 </Link>
 
-                {/* Formulario */}
-                <div className="rounded-2xl border border-mirai-border bg-mirai-surface p-7 shadow-[0_12px_40px_rgba(13,63,42,0.08)] sm:p-9">
-                    <header className="mb-8 text-center">
-                        <Link
-                            to="/"
-                            className="mx-auto flex w-fit items-center justify-center"
-                            aria-label="Ir al inicio de Mirai Café"
-                        >
-                            <span className="flex h-18 w-18 items-center justify-center rounded-2xl bg-mirai-primary text-white shadow-sm">
-                                <MiraiLogo size={45} />
-                            </span>
-                        </Link>
+                {/* Texto inferior */}
+                <div className="absolute bottom-12 left-10 z-10 max-w-xl">
+                    <p className="text-xs font-bold uppercase tracking-[0.26em] text-mirai-accent">
+                        Una experiencia en cada taza
+                    </p>
 
-                        <h1 className="mt-5 text-3xl font-bold text-mirai-primary-dark">
-                            Bienvenido
+                    <h2 className="mt-4 text-4xl font-bold leading-tight text-white xl:text-5xl">
+                        Tu próxima pausa comienza aquí.
+                    </h2>
+
+                    <p className="mt-4 max-w-md text-sm leading-6 text-white/55">
+                        Ingresa a tu cuenta para consultar tus
+                        pedidos y continuar disfrutando de Mirai
+                        Café.
+                    </p>
+                </div>
+            </section>
+
+            {/* Panel del formulario */}
+            <section className="relative flex min-h-screen items-center justify-center px-5 py-12 sm:px-10 lg:px-14">
+                {/* Volver */}
+                <Link
+                    to="/"
+                    className="absolute left-5 top-6 inline-flex items-center gap-2 text-sm font-medium text-white/45 transition hover:text-mirai-accent sm:left-10 sm:top-8"
+                >
+                    <ArrowLeft size={18} />
+                    Volver
+                </Link>
+
+                <div className="w-full max-w-md">
+                    {/* Logo visible en celular */}
+                    <Link
+                        to="/"
+                        className="mb-10 flex w-fit items-center gap-3 transition hover:opacity-90 lg:hidden"
+                    >
+                        <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-mirai-surface-dark/90 border border-white/15 shadow-sm backdrop-blur-sm transition-transform duration-200 hover:scale-105">
+                            <MiraiLogo size={34} />
+                        </span>
+
+                        <div>
+                            <p className="text-lg font-bold leading-none text-white">
+                                Mirai Café
+                            </p>
+
+                            <p className="mt-1 text-xs text-white/45">
+                                Fresco y delicioso
+                            </p>
+                        </div>
+                    </Link>
+
+                    {/* Encabezado */}
+                    <header>
+                        <p className="text-xs font-bold uppercase tracking-[0.24em] text-mirai-accent">
+                            Acceso de clientes
+                        </p>
+
+                        <h1 className="mt-4 text-4xl font-bold tracking-tight text-white">
+                            Bienvenido de nuevo
                         </h1>
 
-                        <p className="mt-2 text-sm leading-6 text-mirai-muted">
-                            Inicia sesión para continuar en Mirai Café
+                        <p className="mt-3 text-sm leading-6 text-white/45">
+                            Ingresa tus datos para acceder a tu
+                            cuenta.
                         </p>
                     </header>
 
+                    {/* Error */}
                     {error && (
                         <div
                             role="alert"
                             aria-live="polite"
-                            className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+                            className="mt-6 rounded-xl border border-red-500/25 bg-red-500/10 px-4 py-3 text-sm text-red-300"
                         >
                             {error}
                         </div>
                     )}
 
+                    {/* Formulario */}
                     <form
-                        className="space-y-5"
+                        className="mt-8 space-y-5"
                         onSubmit={handleSubmit}
                     >
                         <div>
                             <label
                                 htmlFor="email"
-                                className="mb-2 block text-sm font-semibold text-mirai-text"
+                                className="mb-2 block text-sm font-semibold text-white/75"
                             >
                                 Correo electrónico
                             </label>
@@ -139,14 +196,14 @@ export function LoginPage() {
                                 autoComplete="email"
                                 required
                                 disabled={isLoading}
-                                className="w-full rounded-lg border border-mirai-border bg-white px-4 py-3 text-mirai-text outline-none transition placeholder:text-stone-400 focus:border-mirai-primary focus:ring-3 focus:ring-mirai-primary-soft disabled:cursor-not-allowed disabled:bg-stone-100"
+                                className="h-13 w-full rounded-xl border border-white/10 bg-[#151515] px-4 text-white outline-none transition placeholder:text-white/25 focus:border-mirai-accent focus:ring-3 focus:ring-mirai-accent/10 disabled:cursor-not-allowed disabled:opacity-60"
                             />
                         </div>
 
                         <div>
                             <label
                                 htmlFor="password"
-                                className="mb-2 block text-sm font-semibold text-mirai-text"
+                                className="mb-2 block text-sm font-semibold text-white/75"
                             >
                                 Contraseña
                             </label>
@@ -158,21 +215,22 @@ export function LoginPage() {
                                 onChange={(event) =>
                                     setCredentials({
                                         ...credentials,
-                                        password: event.target.value,
+                                        password:
+                                            event.target.value,
                                     })
                                 }
                                 placeholder="Ingresa tu contraseña"
                                 autoComplete="current-password"
                                 required
                                 disabled={isLoading}
-                                className="w-full rounded-lg border border-mirai-border bg-white px-4 py-3 text-mirai-text outline-none transition placeholder:text-stone-400 focus:border-mirai-primary focus:ring-3 focus:ring-mirai-primary-soft disabled:cursor-not-allowed disabled:bg-stone-100"
+                                className="h-13 w-full rounded-xl border border-white/10 bg-[#151515] px-4 text-white outline-none transition placeholder:text-white/25 focus:border-mirai-accent focus:ring-3 focus:ring-mirai-accent/10 disabled:cursor-not-allowed disabled:opacity-60"
                             />
                         </div>
 
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="flex min-h-12 w-full cursor-pointer items-center justify-center rounded-lg bg-mirai-primary px-4 py-3 font-semibold text-white transition hover:bg-mirai-primary-dark focus:outline-none focus:ring-3 focus:ring-mirai-primary-soft disabled:cursor-not-allowed disabled:opacity-60"
+                            className="flex h-13 w-full cursor-pointer items-center justify-center rounded-xl bg-mirai-accent px-5 font-semibold text-white transition hover:bg-mirai-accent-dark focus:outline-none focus:ring-3 focus:ring-mirai-accent/25 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             {isLoading
                                 ? 'Iniciando sesión...'
@@ -180,14 +238,15 @@ export function LoginPage() {
                         </button>
                     </form>
 
-                    <div className="mt-7 border-t border-mirai-border pt-6 text-center">
-                        <p className="text-sm text-mirai-muted">
+                    {/* Registro */}
+                    <div className="mt-8 border-t border-white/8 pt-6 text-center">
+                        <p className="text-sm text-white/40">
                             ¿Todavía no tienes una cuenta?
                         </p>
 
                         <Link
                             to="/register"
-                            className="mt-2 inline-block text-sm font-semibold text-mirai-primary transition hover:text-mirai-primary-dark hover:underline"
+                            className="mt-2 inline-block text-sm font-semibold text-mirai-accent transition hover:text-white"
                         >
                             Crear una cuenta
                         </Link>

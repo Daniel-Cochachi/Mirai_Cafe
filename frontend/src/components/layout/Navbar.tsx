@@ -62,8 +62,8 @@ export function Navbar() {
                     onClick={closeMenu}
                     className="flex items-center gap-3"
                 >
-                    <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-mirai-accent text-white">
-                        <MiraiLogo size={28} />
+                    <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-mirai-surface-dark/90 border border-white/15 shadow-sm backdrop-blur-sm transition-transform duration-200 hover:scale-105">
+                        <MiraiLogo size={34} />
                     </span>
 
                     <div>
