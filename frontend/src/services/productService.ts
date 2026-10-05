@@ -3,6 +3,7 @@ import api from './api'
 import type {
     Product,
     ProductFilters,
+    ProductRequest,
 } from '../types/product'
 
 export const productService = {
@@ -31,5 +32,46 @@ export const productService = {
         )
 
         return response.data
+    },
+
+    async create(
+        data: ProductRequest,
+    ): Promise<Product> {
+        const response = await api.post<Product>(
+            '/products',
+            data,
+        )
+
+        return response.data
+    },
+
+    async update(
+        id: number,
+        data: ProductRequest,
+    ): Promise<Product> {
+        const response = await api.put<Product>(
+            `/products/${id}`,
+            data,
+        )
+
+        return response.data
+    },
+
+    async updateAvailability(
+        id: number,
+        disponible: boolean,
+    ): Promise<Product> {
+        const response = await api.patch<Product>(
+            `/products/${id}/availability`,
+            {
+                disponible,
+            },
+        )
+
+        return response.data
+    },
+
+    async remove(id: number): Promise<void> {
+        await api.delete(`/products/${id}`)
     },
 }

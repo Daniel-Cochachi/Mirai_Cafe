@@ -16,3 +16,13 @@ export interface ProductFilters {
     available?: boolean
     search?: string
 }
+
+export interface ProductRequest {
+    nombre: string
+    descripcion?: string
+    precio: number
+    imagenUrl?: string | null
+    disponible: boolean
+    stock: number
+    categoriaId: number
+}
