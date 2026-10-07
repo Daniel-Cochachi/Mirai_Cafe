@@ -153,40 +153,95 @@ Prefijo base: `/api/v1`
 Documentación Swagger interactiva: `http://localhost:8080/swagger-ui.html`
 
 ### 1. Autenticación (`/api/v1/auth`)
-- `POST /register`: Registro de nuevos clientes.
-- `POST /login`: Inicio de sesión (devuelve token JWT y datos de usuario).
-- `GET /me`: Obtener información del usuario autenticado (requiere Bearer Token).
-- `PATCH /me`: Actualizar nombre del usuario autenticado.
-- `PATCH /me/password`: Actualizar contraseña del usuario autenticado.
+| Método | Endpoint | Acceso | Descripción |
+|---|---|---|---|
+| `POST` | `/api/v1/auth/register` | Público | Registrar nuevo cliente |
+| `POST` | `/api/v1/auth/login` | Público | Iniciar sesión y obtener token JWT |
+| `GET` | `/api/v1/auth/me` | Autenticado | Consultar perfil del usuario actual |
+| `PATCH` | `/api/v1/auth/me` | Autenticado | Actualizar nombre del perfil propio |
+| `PATCH` | `/api/v1/auth/me/password` | Autenticado | Cambiar contraseña del usuario actual |
 
-### 2. Usuarios (`/api/v1/users`) — *Solo ADMIN*
-- `GET /`: Listar todos los usuarios registrados.
-- `GET /{id}`: Obtener detalle de un usuario.
-- `POST /`: Crear un usuario con rol asignado.
-- `PATCH /{id}`: Actualizar datos de un usuario.
-- `PATCH /{id}/role`: Cambiar el rol (`ADMIN`, `CAJERO`, `CLIENTE`).
-- `PATCH /{id}/status`: Activar o desactivar cuenta.
+### 2. Usuarios (`/api/v1/users`)
+| Método | Endpoint | Acceso | Descripción |
+|---|---|---|---|
+| `GET` | `/api/v1/users` | ADMIN | Listar todos los usuarios |
+| `GET` | `/api/v1/users/{id}` | ADMIN | Consultar usuario por ID |
+| `POST` | `/api/v1/users` | ADMIN | Crear usuario administrativo (asignando rol) |
+| `PATCH` | `/api/v1/users/{id}` | ADMIN | Actualizar datos de un usuario |
+| `PATCH` | `/api/v1/users/{id}/role` | ADMIN | Modificar rol (`ADMIN`, `CAJERO`, `CLIENTE`) |
+| `PATCH` | `/api/v1/users/{id}/status` | ADMIN | Activar o desactivar cuenta |
 
 ### 3. Categorías (`/api/v1/categories`)
-- `GET /`: Listar todas las categorías (Público).
-- `GET /{id}`: Obtener categoría por ID (Público).
-- `POST /`: Crear categoría (ADMIN).
-- `PUT /{id}`: Modificar categoría (ADMIN).
-- `DELETE /{id}`: Eliminar categoría (ADMIN).
+| Método | Endpoint | Acceso | Descripción |
+|---|---|---|---|
+| `GET` | `/api/v1/categories` | Público | Listar categorías activas |
+| `GET` | `/api/v1/categories/{id}` | Público | Consultar categoría por ID |
+| `POST` | `/api/v1/categories` | ADMIN | Crear nueva categoría |
+| `PUT` | `/api/v1/categories/{id}` | ADMIN | Actualizar datos de una categoría |
+| `DELETE` | `/api/v1/categories/{id}` | ADMIN | Eliminar categoría |
 
 ### 4. Productos (`/api/v1/products`)
-- `GET /`: Listado con filtros opcionales `categoryId`, `available`, `search` (Público, almacena en caché Redis).
-- `GET /{id}`: Detalle de producto por ID (Público, caché Redis).
-- `POST /`: Registrar nuevo producto (ADMIN, invalida caché Redis).
-- `PUT /{id}`: Modificar producto existente (ADMIN, invalida caché Redis).
-- `DELETE /{id}`: Eliminar producto (ADMIN, invalida caché Redis).
-- `PATCH /{id}/availability`: Cambiar estado disponible/no disponible (ADMIN).
+| Método | Endpoint | Acceso | Descripción |
+|---|---|---|---|
+| `GET` | `/api/v1/products` | Público | Listar productos (filtros `categoryId`, `available`, `search` con caché Redis) |
+| `GET` | `/api/v1/products/{id}` | Público | Consultar producto por ID (con caché Redis) |
+| `POST` | `/api/v1/products` | ADMIN | Crear producto (invalida caché Redis) |
+| `PUT` | `/api/v1/products/{id}` | ADMIN | Actualizar producto completo (invalida caché Redis) |
+| `DELETE` | `/api/v1/products/{id}` | ADMIN | Eliminar producto (invalida caché Redis) |
+| `PATCH` | `/api/v1/products/{id}/availability` | ADMIN | Activar o desactivar disponibilidad inmediata |
 
-### 5. Pedidos (`/api/v1/orders`)
-- `POST /`: Registrar pedido agrupando productos, validando stock y calculando subtotales/total (CLIENTE).
+### 5. Pedidos y Ventas (`/api/v1/orders`)
+| Método | Endpoint | Acceso | Descripción |
+|---|---|---|---|
+| `POST` | `/api/v1/orders` | CLIENTE, CAJERO | Crear pedido con validación de stock y cálculo de totales |
+| `GET` | `/api/v1/orders/my-orders` | CLIENTE | Consultar historial de pedidos del cliente autenticado |
+| `GET` | `/api/v1/orders` | ADMIN, CAJERO | Listar todos los pedidos (filtros por `status`, rango de fechas) |
+| `GET` | `/api/v1/orders/{id}` | Propietario, ADMIN, CAJERO | Consultar detalle completo de un pedido con sus ítems |
+| `PATCH` | `/api/v1/orders/{id}/status` | ADMIN, CAJERO | Actualizar estado (`PENDIENTE`, `EN_PROCESO`, `LISTO`, `PAGADO`, `CANCELADO`) |
+| `POST` | `/api/v1/orders/{id}/cancel` | Propietario, ADMIN, CAJERO | Cancelar pedido y devolver stock |
+| `POST` | `/api/v1/orders/{id}/pay` | ADMIN, CAJERO | Confirmar pago y cerrar pedido |
 
-### 6. Salud del Sistema (`/api/v1/health`)
-- `GET /`: Comprobación de estado (`status: UP`).
+### 6. Insumos e Inventario (`/api/v1/ingredients`)
+| Método | Endpoint | Acceso | Descripción |
+|---|---|---|---|
+| `GET` | `/api/v1/ingredients` | ADMIN, CAJERO | Listar catálogo de insumos y stock actual |
+| `GET` | `/api/v1/ingredients/{id}` | ADMIN, CAJERO | Consultar insumo por ID |
+| `POST` | `/api/v1/ingredients` | ADMIN | Registrar nuevo insumo (nombre, unidad, stock inicial, stock mínimo) |
+| `PUT` | `/api/v1/ingredients/{id}` | ADMIN | Actualizar datos del insumo |
+| `PATCH` | `/api/v1/ingredients/{id}/status` | ADMIN | Activar o desactivar insumo |
+| `GET` | `/api/v1/ingredients/low-stock` | ADMIN, CAJERO | Listar insumos con existencias por debajo del stock mínimo |
+
+### 7. Movimientos de Inventario (`/api/v1/inventory/movements`)
+| Método | Endpoint | Acceso | Descripción |
+|---|---|---|---|
+| `POST` | `/api/v1/inventory/movements` | ADMIN, CAJERO | Registrar movimiento de `ENTRADA` (compra) o `SALIDA` (merma/ajuste) |
+| `GET` | `/api/v1/inventory/movements` | ADMIN, CAJERO | Listar historial general de movimientos con filtros |
+| `GET` | `/api/v1/ingredients/{id}/movements` | ADMIN, CAJERO | Consultar historial de movimientos de un insumo específico |
+
+### 8. Recetas de Productos (`/api/v1/products/{id}/recipe`)
+| Método | Endpoint | Acceso | Descripción |
+|---|---|---|---|
+| `GET` | `/api/v1/products/{productId}/recipe` | ADMIN, CAJERO | Consultar receta e insumos requeridos por producto |
+| `POST` | `/api/v1/products/{productId}/recipe` | ADMIN | Asignar ingredientes y cantidades a la receta de un producto |
+| `PUT` | `/api/v1/products/{productId}/recipe` | ADMIN | Reemplazar o actualizar formulación completa de la receta |
+| `DELETE` | `/api/v1/products/{productId}/recipe/{insumoId}` | ADMIN | Eliminar un ingrediente de la receta |
+
+### 9. Reportes y Dashboard (`/api/v1/reports`) — *Solo ADMIN*
+| Método | Endpoint | Acceso | Descripción |
+|---|---|---|---|
+| `GET` | `/api/v1/reports/dashboard` | ADMIN | Indicadores ejecutivos del día (ingresos hoy, pedidos activos, insumos críticos) |
+| `GET` | `/api/v1/reports/sales/summary` | ADMIN | Resumen consolidado de ventas por rango de fechas (`?from=...&to=...`) |
+| `GET` | `/api/v1/reports/sales/daily` | ADMIN | Ventas acumuladas y evolución horaria del día |
+| `GET` | `/api/v1/reports/sales/weekly` | ADMIN | Ventas y comparativa semanal |
+| `GET` | `/api/v1/reports/sales/monthly` | ADMIN | Ventas del mes agrupadas por fecha |
+| `GET` | `/api/v1/reports/products/top` | ADMIN | Ranking de productos más vendidos en unidades e ingresos |
+| `GET` | `/api/v1/reports/sales/by-category` | ADMIN | Distribución porcentual y monetaria por categoría |
+| `GET` | `/api/v1/reports/inventory/low-stock` | ADMIN | Alerta de insumos y materias primas en nivel crítico |
+
+### 10. Salud del Sistema (`/api/v1/health`)
+| Método | Endpoint | Acceso | Descripción |
+|---|---|---|---|
+| `GET` | `/api/v1/health` | Público | Comprobación de estado del servicio (`status: UP`) |
 
 ---
 
