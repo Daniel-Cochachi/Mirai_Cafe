@@ -1,720 +1,324 @@
 # ☕ Mirai Café
 
-Sistema web para la gestión integral de una cafetería institucional. Permite administrar productos, registrar pedidos, controlar inventario y generar reportes de ventas.
+Sistema web integral para la gestión y digitalización de una cafetería institucional. Permite administrar el catálogo de productos y categorías, gestionar usuarios y roles, registrar pedidos con transaccionalidad, controlar inventario de insumos mediante recetas y generar reportes analíticos de ventas.
 
-Proyecto desarrollado con **Java + Spring Boot** para el backend y **React** para el frontend, bajo una arquitectura de API REST.
-
----
-
-## 📖 Descripción
-
-Mirai Café digitaliza los procesos de una cafetería, desde la consulta del menú y la toma de pedidos hasta el control de inventario y la generación de reportes.
-
-El sistema está pensado para tres tipos de usuarios:
-
-- **Administrador:** gestiona usuarios, productos, inventario y reportes.
-- **Cajero:** registra pedidos, procesa ventas y actualiza estados.
-- **Cliente:** consulta el menú y realiza pedidos.
+Proyecto construido con **Java 21 + Spring Boot 3.3.4** (con persistencia JPA, seguridad JWT y caché en Redis) en el backend y **React 19 + TypeScript + Vite + TailwindCSS v4** en el frontend, completamente orquestado con **Docker & Docker Compose**.
 
 ---
 
-## 🎯 Objetivos
+## 📌 Tabla de Contenidos
 
-### Objetivo general
-
-Desarrollar un sistema web que automatice los procesos de pedido, venta y control de inventario de la cafetería Mirai Café.
-
-### Objetivos específicos
-
-- Reducir el tiempo de atención de los pedidos.
-- Controlar el stock de productos e insumos.
-- Registrar las ventas de forma organizada.
-- Generar reportes diarios, semanales y mensuales.
-- Permitir que los clientes consulten el menú y realicen pedidos.
-- Centralizar la administración de usuarios, productos e inventario.
+1. [Descripción y Roles](#-descripción-y-roles)
+2. [Stack Tecnológico Real](#-stack-tecnológico-real)
+3. [Módulos del Sistema y Tablas Utilizadas](#-módulos-del-sistema-y-tablas-utilizadas)
+   - [Módulo de Insumos e Inventario](#-módulo-de-insumos-e-inventario)
+   - [Módulo de Reportes y Dashboard](#-módulo-de-reportes-y-dashboard)
+   - [Matriz de Tablas por Módulo](#-matriz-de-tablas-por-módulo)
+4. [Estado de Implementación del Proyecto](#-estado-de-implementación-del-proyecto)
+5. [Endpoints de la API REST](#-endpoints-de-la-api-rest)
+6. [Estructura del Repositorio](#-estructura-del-repositorio)
+7. [Guía de Ejecución y Despliegue](#-guía-de-ejecución-y-despliegue)
+   - [Modo 1: Desarrollo en caliente (Recomendado día a día)](#modo-1-desarrollo-en-caliente-recomendado-para-programar)
+   - [Modo 2: Entorno completo en Docker (Para sustentación/producción)](#modo-2-entorno-completo-en-docker-sustentación--producción)
+8. [Cuentas y Datos de Prueba](#-cuentas-y-datos-de-prueba)
+9. [Reglas de Negocio Clave](#-reglas-de-negocio-clave)
 
 ---
 
-## 🚀 Tecnologías
+## 📖 Descripción y Roles
+
+Mirai Café digitaliza y optimiza los flujos de una cafetería moderna. Está diseñado con control de acceso basado en roles (RBAC):
+
+- **Administrador (`ADMIN`):** Control total del sistema. Gestión de usuarios (cambio de roles y activación), productos, categorías, insumos, recetas y visualización del panel administrativo y reportes.
+- **Cajero (`CAJERO`):** Consulta y procesamiento de pedidos, confirmación de pagos y registro de movimientos de inventario.
+- **Cliente (`CLIENTE`):** Consulta del menú digital con filtros en tiempo real, registro de cuenta, edición de perfil y creación de pedidos.
+
+---
+
+## 🚀 Stack Tecnológico Real
 
 ### Backend
-
-- Java 21
-- Spring Boot 3.3.x
-- Spring Web
-- Spring Data JPA
-- Hibernate
-- Spring Security
-- JWT
-- MySQL 8
-- Swagger / OpenAPI
-- Maven
+- **Lenguaje:** Java 21 LTS
+- **Framework:** Spring Boot 3.3.4
+- **Seguridad:** Spring Security 6 + JJWT (Java JWT 0.12.6)
+- **Persistencia:** Spring Data JPA + Hibernate
+- **Base de Datos:** MySQL 8.0 (Debian)
+- **Caché en Memoria:** Spring Cache + Spring Data Redis (Redis 7 Alpine) con invalidación automática (`@Cacheable`, `@CacheEvict`)
+- **Documentación API:** Springdoc OpenAPI UI 2.6.0 (Swagger 3)
+- **Validaciones & Utilidades:** Spring Validation (Jakarta), Lombok
 
 ### Frontend
+- **Librería Core:** React 19 (`19.2.8`)
+- **Lenguaje:** TypeScript (`~6.0.2`)
+- **Herramienta de Construcción:** Vite (`8.3.0`)
+- **Estilos:** TailwindCSS v4 (`@tailwindcss/vite 4.3.3`)
+- **Enrutamiento:** React Router DOM v7 (`7.18.4`)
+- **Cliente HTTP:** Axios (`1.20.0`) con interceptores para inyección de token Bearer
+- **Iconografía:** Lucide React (`1.48.0`)
 
-- React
-- Vite
-- Axios
-- React Router
-- TailwindCSS
-
-### Herramientas
-
-- Git y GitHub
-- Postman
-- IntelliJ IDEA o Visual Studio Code
-- MySQL Workbench
+### Infraestructura y DevOps
+- **Contenedores:** Docker & Docker Compose v2
+- **Servidor Web Frontend en Producción:** Nginx Alpine
+- **Almacenamiento de Datos:** Volúmenes Docker gestionados para MySQL
 
 ---
 
-## 👥 Equipo y distribución de módulos
+## 🗄️ Módulos del Sistema y Tablas Utilizadas
 
-| Integrante | Módulo | Responsabilidad |
+El diseño de la base de datos se encuentra estructurado en el script oficial [`docs/script.sql`](file:///c:/Cibertec/Mirai_Cafe/docs/script.sql). A continuación se detalla qué tablas utiliza cada módulo, poniendo especial énfasis en **Insumos** y **Reportes**:
+
+### 📦 Módulo de Insumos e Inventario
+Este módulo gestiona la materia prima necesaria para la preparación de los productos de la cafetería, el kardex de existencias y la formulación técnica (recetas).
+
+#### Tablas que utiliza:
+1. **`insumos` (Tabla Principal / Catálogo de Materia Prima):**
+   - **Campos:** `id`, `nombre`, `unidad` (kg, litros, unidades), `stock_actual`, `stock_minimo`, `fecha_ingreso`.
+   - **Uso:** Almacena el stock disponible de cada materia prima y el umbral de alerta (`stock_minimo`) para notificaciones de reabastecimiento.
+2. **`movimientos_insumo` (Historial y Auditoría de Stock):**
+   - **Campos:** `id`, `insumo_id` (FK a `insumos`), `tipo` (`ENUM('ENTRADA','SALIDA')`), `cantidad`, `fecha`, `observacion`.
+   - **Uso:** Registra todo ingreso por compras o ajuste manual, así como salidas por merma o preparación, garantizando la trazabilidad del inventario.
+3. **`recetas` (Tabla Intermedia / Formulación de Productos):**
+   - **Campos:** `id`, `producto_id` (FK a `productos`), `insumo_id` (FK a `insumos`), `cantidad`.
+   - **Uso:** Define la relación de cuánta cantidad de cada insumo requiere un producto final (ej. 1 Capuccino = 0.02 kg de café + 0.20 L de leche).
+4. **`productos` (Tabla Relacionada):**
+   - **Uso:** Es el ítem del catálogo que se enlaza a la receta para que, al venderse un pedido, el sistema pueda realizar el descuento automatizado de los insumos vinculados.
+
+---
+
+### 📊 Módulo de Reportes y Dashboard
+Este módulo es de carácter analítico y de inteligencia de negocio. No crea entidades maestras propias, sino que realiza consultas de agregación, cruce y cálculo sobre las tablas operativas del sistema.
+
+#### Tablas que utiliza:
+1. **`pedidos`:**
+   - **Campos consultados:** `id`, `fecha`, `total`, `estado`, `usuario_id`.
+   - **Métricas calculadas:**
+     - Ventas totales del día, de la semana y del mes (`SUM(total)` filtrando por rango de fechas y estado `PAGADO`).
+     - Conteo de órdenes atendidas vs pedidos cancelados.
+     - Ticket promedio de compra (`AVG(total)`).
+     - Tendencias de facturación por período.
+2. **`detalle_pedido`:**
+   - **Campos consultados:** `pedido_id`, `producto_id`, `cantidad`, `precio_unit`, `subtotal`.
+   - **Métricas calculadas:**
+     - Ranking de **productos más vendidos** (Top Sellers) mediante `SUM(cantidad)` agrupado por `producto_id`.
+     - Ingresos generados por cada ítem del menú (`SUM(subtotal)`).
+3. **`productos`:**
+   - **Campos consultados:** `id`, `nombre`, `categoria_id`, `stock`, `disponible`.
+   - **Métricas calculadas:**
+     - Obtención de nombres y descripciones para el ranking de ventas.
+     - Alerta de productos terminados con bajo stock.
+4. **`categorias`:**
+   - **Campos consultados:** `id`, `nombre`.
+   - **Métricas calculadas:** Distribución porcentual de ventas por categoría (bebidas, comidas, postres, snacks).
+5. **`usuarios`:**
+   - **Campos consultados:** `id`, `nombre`, `email`, `rol`.
+   - **Métricas calculadas:** Clientes con mayor recurrencia de compra y productividad de atención por cajero.
+6. **`insumos` y `movimientos_insumo`:**
+   - **Campos consultados:** `nombre`, `stock_actual`, `stock_minimo`, `tipo`, `cantidad`.
+   - **Métricas calculadas:** Reporte de insumos en nivel crítico (por debajo del stock mínimo) y balance de mermas/entradas por fecha.
+
+---
+
+### 📋 Matriz de Tablas por Módulo
+
+| Módulo | Tablas Principales | Tablas Relacionadas / Consultadas |
 |---|---|---|
-| Dev A | 🔐 Autenticación y usuarios | Registro, login, JWT, roles y perfiles |
-| Dev B | 📋 Productos y menú | CRUD de productos, categorías y disponibilidad |
-| Dev C | 🧾 Pedidos y ventas | Carrito, pedidos, totales y estados |
-| Dev D | 📦 Inventario | Insumos, stock, movimientos y recetas |
-| Dev E | 📊 Reportes | Dashboard, ventas y estadísticas |
-
-Cada integrante debe desarrollar:
-
-- Entidades.
-- DTOs.
-- Repositorios.
-- Servicios.
-- Controladores.
-- Validaciones.
-- Manejo de errores.
-- Pruebas de su módulo.
-- Documentación de sus endpoints.
+| 🔐 **Autenticación y Usuarios** | `usuarios` | — |
+| 📋 **Categorías y Menú** | `categorias`, `productos` | — |
+| 🧾 **Pedidos y Ventas** | `pedidos`, `detalle_pedido` | `usuarios`, `productos` |
+| 📦 **Insumos e Inventario** | `insumos`, `movimientos_insumo`, `recetas` | `productos` |
+| 📊 **Reportes y Dashboard** | *(Consultas agregadas)* | `pedidos`, `detalle_pedido`, `productos`, `categorias`, `usuarios`, `insumos`, `movimientos_insumo` |
 
 ---
 
-# 🧩 Módulos del sistema
+## 📈 Estado de Implementación del Proyecto
 
-## 1. 🔐 Autenticación y usuarios
-
-- Registro de clientes.
-- Inicio de sesión con JWT.
-- Control de acceso por roles.
-- CRUD de usuarios para el administrador.
-- Consulta y edición del perfil propio.
-- Activación y desactivación de usuarios.
-
-Roles disponibles:
-
-```text
-ADMIN
-CAJERO
-CLIENTE
-```
-
-## 2. 📋 Productos y menú
-
-- CRUD de productos.
-- CRUD de categorías.
-- Registro de nombre, descripción, precio e imagen.
-- Activación y desactivación de productos.
-- Consulta del menú público.
-- Filtros por categoría, disponibilidad y nombre.
-
-Categorías iniciales:
-
-- Bebidas.
-- Comidas.
-- Postres.
-- Snacks.
-
-## 3. 🧾 Pedidos y ventas
-
-- Creación de pedidos con varios productos.
-- Cálculo automático de subtotales.
-- Cálculo automático del total.
-- Historial de pedidos por cliente.
-- Consulta de pedidos para cajeros y administradores.
-- Actualización del estado del pedido.
-- Cancelación de pedidos.
-- Confirmación de pago.
-
-Estados permitidos:
-
-```text
-PENDIENTE
-EN_PROCESO
-LISTO
-PAGADO
-CANCELADO
-```
-
-Flujo recomendado:
-
-```text
-PENDIENTE → EN_PROCESO → LISTO → PAGADO
-PENDIENTE → CANCELADO
-EN_PROCESO → CANCELADO
-```
-
-No se deben permitir transiciones como:
-
-```text
-CANCELADO → PAGADO
-PAGADO → EN_PROCESO
-```
-
-> En esta primera versión, `PAGADO` representa la confirmación del pago. Si posteriormente se integra una pasarela de pagos, se recomienda separar el estado del pedido y el estado del pago.
-
-## 4. 📦 Inventario
-
-- Registro de insumos.
-- Consulta del stock actual.
-- Registro de movimientos de entrada y salida.
-- Alertas de stock bajo.
-- Registro de recetas.
-- Relación entre productos e insumos.
-- Descuento de insumos al vender productos preparados mediante receta.
-
-Reglas principales:
-
-- No se permiten cantidades negativas.
-- No se puede registrar una salida mayor al stock disponible.
-- Todo ajuste de inventario debe generar un movimiento.
-- El precio y el total del pedido siempre deben calcularse en el backend.
-- El equipo debe definir si se descuenta stock de productos, insumos o ambos, evitando descontar dos veces.
-
-## 5. 📊 Reportes
-
-- Ventas del día.
-- Ventas semanales.
-- Ventas mensuales.
-- Ingresos totales.
-- Cantidad de pedidos.
-- Producto más vendido.
-- Productos con bajo stock.
-- Dashboard con indicadores estadísticos.
-
----
-
-# 🌐 API REST
-
-## Configuración general
-
-Todos los endpoints utilizarán el siguiente prefijo:
-
-```text
-/api/v1
-```
-
-Las rutas protegidas utilizarán JWT:
-
-```http
-Authorization: Bearer TOKEN
-```
-
-Roles:
-
-- `PUBLICO`: no requiere autenticación.
-- `CLIENTE`: cliente autenticado.
-- `CAJERO`: usuario con rol cajero.
-- `ADMIN`: administrador.
-- `ADMIN, CAJERO`: cualquiera de los dos roles.
-
----
-
-## 1. Endpoints de autenticación
-
-| Método | Endpoint | Acceso | Descripción |
+| Componente | Capa | Estado | Descripción |
 |---|---|---|---|
-| `POST` | `/api/v1/auth/register` | Público | Registrar un nuevo cliente |
-| `POST` | `/api/v1/auth/login` | Público | Iniciar sesión |
-| `GET` | `/api/v1/auth/me` | Autenticado | Consultar usuario actual |
-| `PATCH` | `/api/v1/auth/me` | Autenticado | Actualizar perfil propio |
-| `PATCH` | `/api/v1/auth/me/password` | Autenticado | Cambiar contraseña |
-| `POST` | `/api/v1/auth/refresh` | Autenticado | Renovar token |
-| `POST` | `/api/v1/auth/logout` | Autenticado | Cerrar sesión |
-
-`refresh` y `logout` son opcionales si el proyecto utiliza únicamente tokens de corta duración.
-
-### Ejemplo de registro
-
-```json
-{
-  "nombre": "Juan Pérez",
-  "email": "juan@example.com",
-  "password": "Password123"
-}
-```
-
-### Ejemplo de login
-
-```json
-{
-  "email": "juan@example.com",
-  "password": "Password123"
-}
-```
+| **Autenticación (JWT)** | Backend & Frontend | ✅ Completado | Login, registro, perfil, cambio de contraseña, roles ADMIN/CAJERO/CLIENTE. |
+| **Gestión de Usuarios** | Backend | ✅ Completado | CRUD administrativo, activación/desactivación y cambio de rol. |
+| **Categorías** | Backend & Frontend | ✅ Completado | CRUD en backend y módulo administrativo en frontend (`CategoryManager`). |
+| **Productos** | Backend & Frontend | ✅ Completado | CRUD completo, carga/listado, filtros dinámicos, disponibilidad y gestión admin (`ProductManager`). |
+| **Caché en Redis** | Backend & Docker | ✅ Completado | Caché implementado en consulta de productos con invalidación ante cambios. |
+| **Pedidos (Ventas)** | Backend | ✅ Completado | Creación transaccional con validación de stock y cálculo de totales en servidor. |
+| **Frontend Menú & Home** | Frontend | ✅ Completado | Página principal, catálogo dinámico con filtros, navbar responsivo, diseño oscuro moderno. |
+| **Dockerización** | DevOps | ✅ Completado | `docker-compose.yml` funcional con MySQL (3307), Backend (8080), Frontend (5173) y Redis (6379). |
+| **Insumos y Recetas** | Base de Datos | 🟡 Estructurado en BD | Tablas `insumos`, `movimientos_insumo` y `recetas` listas en SQL para endpoints de inventario. |
+| **Reportes y Dashboard** | Base de Datos | 🟡 Estructurado en BD | Modelos y tablas operativas listas para consultas de agregación y reportes de gestión. |
 
 ---
 
-## 2. Endpoints de usuarios
+## 🌐 Endpoints de la API REST
 
-| Método | Endpoint | Acceso | Descripción |
-|---|---|---|---|
-| `GET` | `/api/v1/users` | ADMIN | Listar usuarios |
-| `GET` | `/api/v1/users/{id}` | ADMIN | Consultar usuario |
-| `POST` | `/api/v1/users` | ADMIN | Crear usuario administrativo |
-| `PATCH` | `/api/v1/users/{id}` | ADMIN | Actualizar usuario |
-| `PATCH` | `/api/v1/users/{id}/role` | ADMIN | Cambiar rol |
-| `PATCH` | `/api/v1/users/{id}/status` | ADMIN | Activar o desactivar usuario |
+Prefijo base: `/api/v1`  
+Documentación Swagger interactiva: `http://localhost:8080/swagger-ui.html`
 
-Se recomienda desactivar usuarios en lugar de eliminarlos físicamente, para conservar el historial de pedidos.
+### 1. Autenticación (`/api/v1/auth`)
+- `POST /register`: Registro de nuevos clientes.
+- `POST /login`: Inicio de sesión (devuelve token JWT y datos de usuario).
+- `GET /me`: Obtener información del usuario autenticado (requiere Bearer Token).
+- `PATCH /me`: Actualizar nombre del usuario autenticado.
+- `PATCH /me/password`: Actualizar contraseña del usuario autenticado.
+
+### 2. Usuarios (`/api/v1/users`) — *Solo ADMIN*
+- `GET /`: Listar todos los usuarios registrados.
+- `GET /{id}`: Obtener detalle de un usuario.
+- `POST /`: Crear un usuario con rol asignado.
+- `PATCH /{id}`: Actualizar datos de un usuario.
+- `PATCH /{id}/role`: Cambiar el rol (`ADMIN`, `CAJERO`, `CLIENTE`).
+- `PATCH /{id}/status`: Activar o desactivar cuenta.
+
+### 3. Categorías (`/api/v1/categories`)
+- `GET /`: Listar todas las categorías (Público).
+- `GET /{id}`: Obtener categoría por ID (Público).
+- `POST /`: Crear categoría (ADMIN).
+- `PUT /{id}`: Modificar categoría (ADMIN).
+- `DELETE /{id}`: Eliminar categoría (ADMIN).
+
+### 4. Productos (`/api/v1/products`)
+- `GET /`: Listado con filtros opcionales `categoryId`, `available`, `search` (Público, almacena en caché Redis).
+- `GET /{id}`: Detalle de producto por ID (Público, caché Redis).
+- `POST /`: Registrar nuevo producto (ADMIN, invalida caché Redis).
+- `PUT /{id}`: Modificar producto existente (ADMIN, invalida caché Redis).
+- `DELETE /{id}`: Eliminar producto (ADMIN, invalida caché Redis).
+- `PATCH /{id}/availability`: Cambiar estado disponible/no disponible (ADMIN).
+
+### 5. Pedidos (`/api/v1/orders`)
+- `POST /`: Registrar pedido agrupando productos, validando stock y calculando subtotales/total (CLIENTE).
+
+### 6. Salud del Sistema (`/api/v1/health`)
+- `GET /`: Comprobación de estado (`status: UP`).
 
 ---
 
-## 3. Endpoints de categorías
-
-| Método | Endpoint | Acceso | Descripción |
-|---|---|---|---|
-| `GET` | `/api/v1/categories` | Público | Listar categorías |
-| `GET` | `/api/v1/categories/{id}` | Público | Consultar categoría |
-| `POST` | `/api/v1/categories` | ADMIN | Crear categoría |
-| `PUT` | `/api/v1/categories/{id}` | ADMIN | Actualizar categoría |
-| `DELETE` | `/api/v1/categories/{id}` | ADMIN | Eliminar categoría |
-
-No se debe eliminar una categoría que tenga productos asociados. En ese caso, debe desactivarse o impedirse la eliminación.
-
----
-
-## 4. Endpoints de productos
-
-| Método | Endpoint | Acceso | Descripción |
-|---|---|---|---|
-| `GET` | `/api/v1/products` | Público | Listar productos disponibles |
-| `GET` | `/api/v1/products/{id}` | Público | Consultar producto |
-| `POST` | `/api/v1/products` | ADMIN | Crear producto |
-| `PUT` | `/api/v1/products/{id}` | ADMIN | Actualizar producto |
-| `PATCH` | `/api/v1/products/{id}/availability` | ADMIN | Activar o desactivar producto |
-| `DELETE` | `/api/v1/products/{id}` | ADMIN | Desactivar producto |
-
-Filtros disponibles:
+## 📁 Estructura del Repositorio
 
 ```text
-GET /api/v1/products?categoryId=1&available=true&search=cafe&page=0&size=10
-```
-
-El cliente solo debe visualizar productos disponibles.
-
----
-
-## 5. Endpoints de pedidos
-
-| Método | Endpoint | Acceso | Descripción |
-|---|---|---|---|
-| `POST` | `/api/v1/orders` | CLIENTE, CAJERO | Crear pedido |
-| `GET` | `/api/v1/orders/my-orders` | CLIENTE | Consultar pedidos propios |
-| `GET` | `/api/v1/orders` | ADMIN, CAJERO | Listar pedidos |
-| `GET` | `/api/v1/orders/{id}` | Propietario, ADMIN, CAJERO | Consultar pedido |
-| `PATCH` | `/api/v1/orders/{id}/status` | ADMIN, CAJERO | Cambiar estado |
-| `POST` | `/api/v1/orders/{id}/cancel` | Propietario, ADMIN, CAJERO | Cancelar pedido |
-| `POST` | `/api/v1/orders/{id}/pay` | ADMIN, CAJERO | Confirmar pago |
-
-Filtros:
-
-```text
-GET /api/v1/orders?status=PENDIENTE&from=2026-09-01&to=2026-09-17&page=0&size=20
-```
-
-### Crear pedido
-
-```json
-{
-  "items": [
-    {
-      "productoId": 1,
-      "cantidad": 2
-    },
-    {
-      "productoId": 3,
-      "cantidad": 1
-    }
-  ],
-  "observacion": "Sin azúcar"
-}
-```
-
-El backend debe:
-
-1. Verificar que los productos existan.
-2. Verificar que estén disponibles.
-3. Validar el stock.
-4. Obtener los precios desde la base de datos.
-5. Calcular subtotales y total.
-6. Guardar el precio unitario en cada detalle.
-7. Registrar el pedido dentro de una transacción.
-
----
-
-## 6. Endpoints de insumos
-
-| Método | Endpoint | Acceso | Descripción |
-|---|---|---|---|
-| `GET` | `/api/v1/ingredients` | ADMIN, CAJERO | Listar insumos |
-| `GET` | `/api/v1/ingredients/{id}` | ADMIN, CAJERO | Consultar insumo |
-| `POST` | `/api/v1/ingredients` | ADMIN | Crear insumo |
-| `PUT` | `/api/v1/ingredients/{id}` | ADMIN | Actualizar insumo |
-| `PATCH` | `/api/v1/ingredients/{id}` | ADMIN | Actualizar parcialmente |
-| `PATCH` | `/api/v1/ingredients/{id}/status` | ADMIN | Activar o desactivar |
-| `GET` | `/api/v1/ingredients/low-stock` | ADMIN, CAJERO | Listar insumos con bajo stock |
-
-Los endpoints pueden utilizar `/insumos` en lugar de `/ingredients`, pero todo el equipo debe utilizar un solo idioma.
-
----
-
-## 7. Endpoints de movimientos de inventario
-
-| Método | Endpoint | Acceso | Descripción |
-|---|---|---|---|
-| `POST` | `/api/v1/inventory/movements` | ADMIN, CAJERO | Registrar entrada o salida |
-| `GET` | `/api/v1/inventory/movements` | ADMIN, CAJERO | Listar movimientos |
-| `GET` | `/api/v1/ingredients/{id}/movements` | ADMIN, CAJERO | Consultar movimientos de un insumo |
-
-### Registrar movimiento
-
-```json
-{
-  "insumoId": 1,
-  "tipo": "ENTRADA",
-  "cantidad": 10,
-  "observacion": "Compra semanal"
-}
-```
-
-Tipos permitidos:
-
-```text
-ENTRADA
-SALIDA
-```
-
----
-
-## 8. Endpoints de recetas
-
-| Método | Endpoint | Acceso | Descripción |
-|---|---|---|---|
-| `GET` | `/api/v1/products/{productId}/recipe` | ADMIN, CAJERO | Consultar receta |
-| `PUT` | `/api/v1/products/{productId}/recipe` | ADMIN | Reemplazar receta |
-| `DELETE` | `/api/v1/products/{productId}/recipe/{ingredientId}` | ADMIN | Eliminar ingrediente |
-
-### Ejemplo de receta
-
-```json
-{
-  "items": [
-    {
-      "insumoId": 1,
-      "cantidad": 0.02
-    },
-    {
-      "insumoId": 2,
-      "cantidad": 0.20
-    }
-  ]
-}
-```
-
----
-
-## 9. Endpoints de reportes
-
-| Método | Endpoint | Acceso | Descripción |
-|---|---|---|---|
-| `GET` | `/api/v1/reports/dashboard` | ADMIN | Resumen general |
-| `GET` | `/api/v1/reports/sales/summary` | ADMIN | Resumen de ventas |
-| `GET` | `/api/v1/reports/sales/daily` | ADMIN | Ventas del día |
-| `GET` | `/api/v1/reports/sales/weekly` | ADMIN | Ventas de la semana |
-| `GET` | `/api/v1/reports/sales/monthly` | ADMIN | Ventas del mes |
-| `GET` | `/api/v1/reports/products/top` | ADMIN | Productos más vendidos |
-| `GET` | `/api/v1/reports/inventory/low-stock` | ADMIN | Insumos con bajo stock |
-
-Ejemplo:
-
-```text
-GET /api/v1/reports/sales/summary?from=2026-09-01&to=2026-09-17
-```
-
-### Respuesta de ejemplo
-
-```json
-{
-  "totalOrders": 125,
-  "totalSales": 2450.50,
-  "cancelledOrders": 8,
-  "averageOrder": 19.60
-}
-```
-
----
-
-## 10. Endpoint de salud del sistema
-
-| Método | Endpoint | Acceso | Descripción |
-|---|---|---|---|
-| `GET` | `/api/v1/health` | Público | Verificar que la API está activa |
-
-Respuesta:
-
-```json
-{
-  "status": "UP",
-  "service": "mirai-cafe"
-}
-```
-
----
-
-# 🗄️ Modelo de datos
-
-Entidades principales:
-
-- `Usuario`
-- `Categoria`
-- `Producto`
-- `Pedido`
-- `DetallePedido`
-- `Insumo`
-- `MovimientoInsumo`
-- `Receta`
-
-El script de la base de datos se encuentra en:
-
-```text
-docs/script.sql
-```
-
-Relaciones principales:
-
-```text
-Usuario 1 ─── N Pedido
-Pedido 1 ─── N DetallePedido
-Producto 1 ─── N DetallePedido
-Categoria 1 ─── N Producto
-Producto 1 ─── N Receta
-Insumo 1 ─── N Receta
-Insumo 1 ─── N MovimientoInsumo
-```
-
----
-
-# 📁 Estructura del proyecto
-
-```text
-mirai-cafe/
+Mirai_Cafe/
 ├── backend/
 │   ├── src/main/java/com/cibertec/backend/
-│   │   ├── controller/
-│   │   ├── service/
-│   │   ├── repository/
-│   │   ├── entity/
-│   │   ├── dto/
-│   │   ├── security/
-│   │   ├── config/
-│   │   └── exception/
+│   │   ├── config/              # Configuraciones de seguridad, CORS y OpenAPI
+│   │   ├── controller/          # Controladores REST (Auth, User, Product, Category, Order, Health)
+│   │   ├── dto/                 # Data Transfer Objects divididos por dominio
+│   │   ├── entity/              # Entidades JPA (Usuario, Categoria, Producto, Pedido, DetallePedido, Rol, Estado)
+│   │   ├── exception/           # Manejador global de excepciones (GlobalExceptionHandler)
+│   │   ├── repository/          # Repositorios Spring Data JPA con consultas JPQL y EntityGraph
+│   │   ├── security/            # Filtros JWT (JwtAuthenticationFilter) y JwtService
+│   │   ├── service/             # Lógica de negocio (AuthService, ProductoService, PedidoService, etc.)
+│   │   └── specification/      # Filtros dinámicos de consulta con JPA Specifications
 │   ├── src/main/resources/
-│   │   └── application.properties
-│   └── pom.xml
+│   │   └── application.properties # Configuración de BD, Redis, JWT y Swagger
+│   ├── Dockerfile               # Multi-stage build para generar imagen de Spring Boot
+│   └── pom.xml                  # Dependencias Maven (Java 21, Spring Boot 3.3.4)
 ├── frontend/
 │   ├── src/
-│   │   ├── pages/
 │   │   ├── components/
-│   │   ├── services/
-│   │   ├── context/
-│   │   └── routes/
-│   └── package.json
+│   │   │   ├── admin/           # CategoryManager, ProductManager
+│   │   │   ├── brand/           # Logotipo e identidad visual
+│   │   │   ├── home/            # Secciones de la landing page (Hero, Categorías, Promos, Ubicación)
+│   │   │   ├── layout/          # Navbar interactivo y Footer
+│   │   │   ├── menu/            # Barra de búsqueda, filtros y cuadrícula de menú
+│   │   │   └── products/        # Tarjeta de producto con precio e imagen
+│   │   ├── context/             # AuthContext (Estado global de sesión y token)
+│   │   ├── hooks/               # Custom hooks (useMenu)
+│   │   ├── pages/               # HomePage, MenuPage, LoginPage, RegisterPage, ProfilePage, AdminPage
+│   │   ├── services/            # Clientes Axios (api.ts, authService, productService, categoryService)
+│   │   └── types/               # Definiciones TypeScript de entidades y payloads
+│   ├── Dockerfile               # Multi-stage build con Nginx para producción
+│   ├── nginx.conf               # Configuración de Nginx para Single Page Application (SPA)
+│   ├── package.json             # Dependencias (React 19, Tailwind v4, Vite 8)
+│   └── vite.config.ts
 ├── docs/
-│   ├── script.sql
-│   └── postman_collection.json
-└── README.md
+│   └── script.sql               # Script DDL/DML de MySQL 8 con datos de prueba iniciales
+├── docker-compose.yml           # Orquestación de MySQL 8, Backend, Frontend y Redis
+├── comandos-docker.txt          # Chuleta de comandos rápidos de Docker
+└── README.md                    # Documentación del proyecto
 ```
 
 ---
 
-# ⚙️ Configuración y ejecución
+## ⚙️ Guía de Ejecución y Despliegue
 
-## Requisitos previos
+Dispones de dos formas de trabajar en el proyecto:
 
-- Java 21
-- Node.js 18 o superior
-- MySQL 8
-- Maven
-- Git
+### Modo 1: Desarrollo en caliente (Recomendado para programar)
+Permite programar con recarga inmediata en el frontend (HMR en 0.1s) y ejecución cómoda del backend desde tu IDE favorito:
 
-## Configuración de la base de datos
+1. **Levantar los servicios base (MySQL y Redis) en Docker:**
+   ```bash
+   docker compose up mysql redis -d
+   ```
+   > MySQL iniciará en el puerto `3307` y cargará automáticamente la estructura y datos de `docs/script.sql`.
 
-Crear la base de datos ejecutando:
+2. **Ejecutar el Backend Spring Boot:**
+   - Ábrelo en IntelliJ IDEA o VS Code y ejecuta la clase `BackendApplication.java`, o por consola:
+   ```bash
+   cd backend
+   ./mvnw spring-boot:run
+   ```
+   - API disponible en: `http://localhost:8080/api/v1`
+   - Documentación Swagger: `http://localhost:8080/swagger-ui.html`
 
-```bash
-mysql -u root -p < docs/script.sql
-```
-
-## Ejecución del backend
-
-```bash
-cd backend
-./mvnw clean install
-./mvnw spring-boot:run
-```
-
-API:
-
-```text
-http://localhost:8080
-```
-
-Swagger:
-
-```text
-http://localhost:8080/swagger-ui/index.html
-```
-
-## Ejecución del frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Frontend:
-
-```text
-http://localhost:5173
-```
+3. **Ejecutar el Frontend React:**
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+   - Aplicación web disponible en: `http://localhost:5173`
 
 ---
 
-# 🔐 Variables de configuración
+### Modo 2: Entorno completo en Docker (Sustentación / Producción)
+Levanta todo el ecosistema (MySQL + Backend + Frontend en Nginx + Redis) en contenedores aislados:
 
-No se deben subir contraseñas reales al repositorio.
+1. Asegúrate de tener Docker Desktop iniciado.
+2. En la raíz del proyecto, ejecuta:
+   ```bash
+   docker compose up --build -d
+   ```
+3. Verifica el estado de los contenedores:
+   ```bash
+   docker compose ps
+   ```
+4. Para detener los contenedores sin perder datos:
+   ```bash
+   docker compose down
+   ```
+5. Para reiniciar la base de datos a su estado limpio inicial:
+   ```bash
+   docker compose down -v
+   docker compose up -d
+   ```
 
-Ejemplo:
+### 🔗 Puertos y Enlaces de Acceso
 
-```properties
-spring.application.name=mirai-cafe
-
-spring.datasource.url=${DB_URL:jdbc:mysql://localhost:3306/mirai_cafe}
-spring.datasource.username=${DB_USERNAME:root}
-spring.datasource.password=${DB_PASSWORD:}
-
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=false
-
-server.port=${PORT:8080}
-```
-
-Para producción se deben utilizar variables de entorno:
-
-```text
-DB_URL
-DB_USERNAME
-DB_PASSWORD
-JWT_SECRET
-```
-
----
-
-# ✅ Reglas de negocio obligatorias
-
-- Un usuario no puede registrarse directamente como `ADMIN`.
-- El email de cada usuario debe ser único.
-- El precio de un producto debe ser mayor que cero.
-- La cantidad de un producto debe ser mayor que cero.
-- El total del pedido debe calcularse en el backend.
-- Un pedido cancelado no puede pagarse.
-- Un pedido pagado no puede volver a estar pendiente.
-- No se puede vender un producto desactivado.
-- No se puede registrar una salida mayor al stock disponible.
-- Todo movimiento de inventario debe quedar registrado.
-- Los pedidos deben guardarse usando transacciones.
-- Los usuarios desactivados no deben poder iniciar sesión.
-- Los clientes solo pueden consultar sus propios pedidos.
-- Solo `ADMIN` puede administrar usuarios, productos, categorías y recetas.
-- `CAJERO` puede procesar pedidos y registrar movimientos autorizados.
-- Los reportes deben estar disponibles únicamente para `ADMIN`.
+| Servicio | URL / Host | Credenciales por defecto |
+|---|---|---|
+| **Frontend Web** | `http://localhost:5173` | — |
+| **Backend API** | `http://localhost:8080/api/v1` | — |
+| **Swagger UI** | `http://localhost:8080/swagger-ui.html` | — |
+| **Health Check** | `http://localhost:8080/api/v1/health` | — |
+| **Base de Datos MySQL** | `localhost:3307` | Usuario: `root` / Clave: `root` |
+| **Caché Redis** | `localhost:6379` | Sin contraseña |
 
 ---
 
-# 🧪 Pruebas mínimas
+## 👥 Cuentas y Datos de Prueba
 
-Cada módulo debe incluir pruebas para:
+El script de base de datos incluye cuentas preconfiguradas con contraseñas encriptadas con BCrypt:
 
-- Casos exitosos.
-- Datos inválidos.
-- Usuario no autenticado.
-- Usuario sin permisos.
-- Recursos inexistentes.
-- Errores de base de datos.
-- Reglas de negocio.
-
-Pruebas mínimas del sistema:
-
-- Registro e inicio de sesión.
-- Creación de productos.
-- Creación de pedidos.
-- Cálculo correcto del total.
-- Cancelación de pedidos.
-- Actualización de stock.
-- Consulta de reportes.
-- Restricción de endpoints por rol.
+| Rol | Correo Electrónico | Contraseña por defecto | Permisos clave |
+|---|---|---|---|
+| **ADMIN** | `admin@miraicafe.com` | `admin123` | Acceso a `/admin`, administración de productos, categorías y usuarios |
+| **CAJERO** | `cajero@miraicafe.com` | `cajero123` | Gestión de pedidos y registro de ventas |
+| **CLIENTE** | `juan@miraicafe.com` | `cliente123` | Visualización de menú, generación de pedidos y perfil |
 
 ---
 
-# 🌿 Flujo de trabajo con Git
+## 🛡️ Reglas de Negocio Clave
 
-No se recomienda que todo el equipo trabaje directamente sobre `main`.
-
-Crear una rama por funcionalidad:
-
-```bash
-git checkout -b feature/auth
-git checkout -b feature/products
-git checkout -b feature/orders
-git checkout -b feature/inventory
-git checkout -b feature/reports
-```
-
-Antes de subir cambios:
-
-```bash
-git pull origin main
-git add .
-git commit -m "feat(auth): implementar inicio de sesión"
-git push origin feature/auth
-```
-
-Luego se debe crear un Pull Request hacia `main`.
-
-Reglas:
-
-- No hacer `git push --force` sobre `main`.
-- Probar localmente antes de subir cambios.
-- No subir contraseñas ni tokens.
-- No modificar archivos de otro módulo sin coordinar con su responsable.
-- Mantener nombres de endpoints y DTOs consistentes.
-- Revisar los Pull Requests entre todos los integrantes.
-
----
-
-# 📌 Estado del proyecto
-
-El proyecto se encuentra en etapa inicial de planificación y configuración.
-
-La implementación se realizará por módulos:
-
-1. Autenticación y usuarios.
-2. Productos y categorías.
-3. Pedidos y ventas.
-4. Inventario y recetas.
-5. Reportes y dashboard.
-6. Integración entre backend y frontend.
-7. Pruebas y documentación final.
+- **Seguridad en Registro:** Los usuarios que se registran desde la API pública reciben automáticamente el rol `CLIENTE`. Solo un `ADMIN` puede otorgar permisos administrativos.
+- **Precios e Importes del Lado del Servidor:** El cliente únicamente envía los IDs de producto y cantidades; el backend valida disponibilidad, stock real y obtiene los precios vigentes de la base de datos para calcular subtotales y total.
+- **Transaccionalidad en Pedidos:** Las órdenes se procesan bajo `@Transactional`, garantizando que si algún ítem falla o no tiene existencias, no queden registros parciales.
+- **Rendimiento con Caché en Memoria:** Las consultas del catálogo público de productos se optimizan mediante Redis para respuestas ultra rápidas, invalidándose automáticamente cuando un administrador añade, edita o elimina productos.
+- **Control de Inventario Preventivo:** Las salidas de stock no pueden superar las existencias actuales (`stock_actual >= cantidad`), y todo cambio en insumos debe registrarse como un movimiento de tipo `ENTRADA` o `SALIDA`.
