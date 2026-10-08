@@ -4,7 +4,10 @@ import {
 } from 'react'
 
 import {
+    ArrowLeftRight,
+    ChefHat,
     LayoutGrid,
+    Package,
     Tag,
 } from 'lucide-react'
 
@@ -12,11 +15,19 @@ import { useNavigate } from 'react-router-dom'
 
 import { CategoryManager } from '../components/admin/CategoryManager'
 import { ProductManager } from '../components/admin/ProductManager'
+import { InsumoManager } from '../components/inventory/InsumoManager'
+import { MovementManager } from '../components/inventory/MovementManager'
+import { RecipeManager } from '../components/inventory/RecipeManager'
 import { Footer } from '../components/layout/footer'
 import { Navbar } from '../components/layout/Navbar'
 import { useAuth } from '../context/AuthContext'
 
-type AdminTab = 'products' | 'categories'
+type AdminTab =
+    | 'products'
+    | 'categories'
+    | 'ingredients'
+    | 'movements'
+    | 'recipes'
 
 export function AdminPage() {
     const navigate = useNavigate()
@@ -41,6 +52,9 @@ export function AdminPage() {
     const tabs: { id: AdminTab; label: string; icon: typeof Tag }[] = [
         { id: 'products', label: 'Productos', icon: LayoutGrid },
         { id: 'categories', label: 'Categorías', icon: Tag },
+        { id: 'ingredients', label: 'Insumos', icon: Package },
+        { id: 'movements', label: 'Movimientos', icon: ArrowLeftRight },
+        { id: 'recipes', label: 'Recetas', icon: ChefHat },
     ]
 
     return (
@@ -59,11 +73,11 @@ export function AdminPage() {
                         </h1>
 
                         <p className="mt-3 text-sm leading-6 text-white/45">
-                            Gestiona las categorías y productos de la carta de Mirai Café.
+                            Gestiona la carta, el inventario de insumos y las recetas de Mirai Café.
                         </p>
                     </header>
 
-                    <div className="mt-8 flex gap-2">
+                    <div className="mt-8 flex flex-wrap gap-2">
                         {tabs.map((tab) => {
                             const Icon = tab.icon
                             const isActive = activeTab === tab.id
@@ -88,11 +102,11 @@ export function AdminPage() {
                     </div>
 
                     <div className="mt-8">
-                        {activeTab === 'products' ? (
-                            <ProductManager />
-                        ) : (
-                            <CategoryManager />
-                        )}
+                        {activeTab === 'products' && <ProductManager />}
+                        {activeTab === 'categories' && <CategoryManager />}
+                        {activeTab === 'ingredients' && <InsumoManager />}
+                        {activeTab === 'movements' && <MovementManager />}
+                        {activeTab === 'recipes' && <RecipeManager />}
                     </div>
                 </div>
             </main>

@@ -95,4 +95,37 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 
+    @ExceptionHandler(StockInsuficienteException.class)
+    public ResponseEntity<ErrorResponse> manejarStockInsuficiente(
+            StockInsuficienteException exception
+    ) {
+        return respuesta(HttpStatus.CONFLICT, exception.getMessage());
+    }
+
+    @ExceptionHandler(RecetaYaExisteException.class)
+    public ResponseEntity<ErrorResponse> manejarRecetaDuplicada(
+            RecetaYaExisteException exception
+    ) {
+        return respuesta(HttpStatus.CONFLICT, exception.getMessage());
+    }
+
+    @ExceptionHandler(SolicitudInvalidaException.class)
+    public ResponseEntity<ErrorResponse> manejarSolicitudInvalida(
+            SolicitudInvalidaException exception
+    ) {
+        return respuesta(HttpStatus.BAD_REQUEST, exception.getMessage());
+    }
+
+    private ResponseEntity<ErrorResponse> respuesta(HttpStatus estado, String mensaje) {
+        ErrorResponse response = new ErrorResponse(
+                estado.value(),
+                mensaje,
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity
+                .status(estado)
+                .body(response);
+    }
+
 }

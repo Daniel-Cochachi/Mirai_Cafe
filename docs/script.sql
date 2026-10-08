@@ -68,11 +68,13 @@ CREATE TABLE detalle_pedido (
 -- Insumos usados para preparar los productos
 CREATE TABLE insumos (
     id             BIGINT AUTO_INCREMENT PRIMARY KEY,
-    nombre         VARCHAR(100) NOT NULL,
+    nombre         VARCHAR(100) NOT NULL UNIQUE,
     unidad         VARCHAR(20) NOT NULL,
     stock_actual   DECIMAL(10,2) NOT NULL DEFAULT 0,
     stock_minimo   DECIMAL(10,2) NOT NULL DEFAULT 0,
-    fecha_ingreso  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    activo         BOOLEAN NOT NULL DEFAULT TRUE,
+    fecha_ingreso  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_insumo_stock CHECK (stock_actual >= 0)
 );
 
 -- Movimientos de entrada y salida de insumos
@@ -96,7 +98,9 @@ CREATE TABLE recetas (
     CONSTRAINT fk_receta_producto
         FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE CASCADE,
     CONSTRAINT fk_receta_insumo
-        FOREIGN KEY (insumo_id) REFERENCES insumos(id)
+        FOREIGN KEY (insumo_id) REFERENCES insumos(id),
+    CONSTRAINT uk_receta_producto_insumo
+        UNIQUE (producto_id, insumo_id)
 );
 
 -- Datos de prueba
@@ -123,25 +127,74 @@ INSERT INTO productos (nombre, descripcion, precio, stock, categoria_id) VALUES
 ('Torta de chocolate','Porción individual',      6.00, 20, 3),
 ('Galleta de avena',  'Galleta artesanal',       3.00, 60, 4);
 
--- Insumos iniciales
+-- Insumos iniciales (stock_actual coherente con los movimientos de abajo:
+-- entradas - salidas = stock_actual)
 INSERT INTO insumos (nombre, unidad, stock_actual, stock_minimo) VALUES
-('Café molido',  'kg',       10.0, 3.0),
-('Leche',        'litros',   20.0, 5.0),
-('Azúcar',       'kg',        8.0, 2.0),
-('Pan integral', 'unidades', 50.0, 15.0),
-('Pollo',        'kg',        6.0, 2.0),
-('Harina',       'kg',       12.0, 4.0);
+('Café molido',       'kg',       10.0,  3.0),
+('Leche',             'litros',   18.0,  5.0),
+('Azúcar',            'kg',        8.0,  2.0),
+('Pan integral',      'unidades', 50.0, 15.0),
+('Pollo',             'kg',        6.0,  2.0),
+('Harina',            'kg',       12.0,  4.0),
+('Carne molida',      'kg',        5.0,  1.5),
+('Chocolate en polvo','kg',        1.5,  2.0),
+('Mantequilla',       'kg',        4.0,  1.0),
+('Crema para batir',  'litros',    6.0,  2.0),
+('Huevos',            'unidades', 36.0, 12.0),
+('Queso',             'kg',        3.0,  1.0);
 
--- Movimientos de ejemplo
+-- Insumo inactivo de ejemplo (para probar el filtro de movimientos y recetas)
+INSERT INTO insumos (nombre, unidad, stock_actual, stock_minimo, activo) VALUES
+('Jarabe de vainilla', 'litros', 2.0, 0.5, FALSE);
+
+-- Movimientos de ejemplo (entradas - salidas = stock_actual de cada insumo)
 INSERT INTO movimientos_insumo (insumo_id, tipo, cantidad, observacion) VALUES
-(1, 'ENTRADA', 10.0, 'Compra inicial'),
-(2, 'ENTRADA', 20.0, 'Compra inicial'),
-(2, 'SALIDA',   2.0, 'Uso en capuccinos');
+(1,  'ENTRADA', 10.0, 'Compra inicial'),
+(2,  'ENTRADA', 20.0, 'Compra inicial'),
+(2,  'SALIDA',   2.0, 'Uso en capuccinos'),
+(3,  'ENTRADA', 10.0, 'Compra inicial'),
+(3,  'SALIDA',   2.0, 'Uso en capuccinos y galletas'),
+(4,  'ENTRADA', 54.0, 'Compra inicial'),
+(4,  'SALIDA',   4.0, 'Uso en sándwiches de pollo'),
+(5,  'ENTRADA',  7.0, 'Compra inicial'),
+(5,  'SALIDA',   1.0, 'Uso en sándwiches de pollo'),
+(6,  'ENTRADA', 13.0, 'Compra inicial'),
+(6,  'SALIDA',   1.0, 'Uso en galletas de avena'),
+(7,  'ENTRADA',  6.0, 'Compra inicial'),
+(7,  'SALIDA',   1.0, 'Uso en empanadas de carne'),
+(8,  'ENTRADA',  3.0, 'Compra inicial'),
+(8,  'SALIDA',   1.5, 'Uso en tortas de chocolate'),
+(9,  'ENTRADA',  5.0, 'Compra inicial'),
+(9,  'SALIDA',   1.0, 'Uso en galletas de avena'),
+(10, 'ENTRADA',  8.0, 'Compra inicial'),
+(10, 'SALIDA',   2.0, 'Uso en postres del día'),
+(11, 'ENTRADA', 40.0, 'Compra inicial'),
+(11, 'SALIDA',   4.0, 'Uso en galletas y empanadas'),
+(12, 'ENTRADA',  4.0, 'Compra inicial'),
+(12, 'SALIDA',   1.0, 'Uso en sándwiches de pollo'),
+(13, 'ENTRADA',  2.0, 'Compra inicial');
 
--- Receta de ejemplo: Capuccino = 0.02 kg café + 0.20 L leche
+-- Recetas de todos los productos (cantidades por unidad del producto)
 INSERT INTO recetas (producto_id, insumo_id, cantidad) VALUES
-(2, 1, 0.02),
-(2, 2, 0.20);
+(1, 1,  0.02),   -- Café Americano: café
+(1, 3,  0.01),   -- Café Americano: azúcar
+(2, 1,  0.02),   -- Capuccino: café
+(2, 2,  0.20),   -- Capuccino: leche
+(3, 4,  2.00),   -- Sándwich de pollo: pan integral
+(3, 5,  0.12),   -- Sándwich de pollo: pollo
+(3, 12, 0.04),   -- Sándwich de pollo: queso
+(4, 6,  0.10),   -- Empanada de carne: harina
+(4, 7,  0.09),   -- Empanada de carne: carne molida
+(4, 11, 1.00),   -- Empanada de carne: huevo
+(5, 6,  0.08),   -- Torta de chocolate: harina
+(5, 3,  0.06),   -- Torta de chocolate: azúcar
+(5, 8,  0.05),   -- Torta de chocolate: chocolate en polvo
+(5, 9,  0.04),   -- Torta de chocolate: mantequilla
+(5, 11, 1.00),   -- Torta de chocolate: huevo
+(6, 6,  0.04),   -- Galleta de avena: harina
+(6, 3,  0.03),   -- Galleta de avena: azúcar
+(6, 9,  0.02),   -- Galleta de avena: mantequilla
+(6, 11, 0.50);   -- Galleta de avena: huevo
 
 -- Pedido de ejemplo
 INSERT INTO pedidos (usuario_id, total, estado) VALUES
@@ -151,3 +204,12 @@ INSERT INTO pedidos (usuario_id, total, estado) VALUES
 INSERT INTO detalle_pedido (pedido_id, producto_id, cantidad, precio_unit, subtotal) VALUES
 (1, 1, 1, 5.00, 5.00),
 (1, 3, 1, 8.00, 8.00);
+
+-- Migración para volúmenes Docker existentes (este script recrea la BD completa;
+-- en volúmenes ya creados aplicar solo estos cambios):
+-- 1) Hibernate agrega 'activo' como NULL:
+--    UPDATE insumos SET activo = TRUE WHERE activo IS NULL;
+-- 2) Restricción de nombre único:
+--    ALTER TABLE insumos ADD CONSTRAINT uq_insumo_nombre UNIQUE (nombre);
+-- 3) Datos nuevos de insumos, movimientos y recetas: ejecutar los INSERT de este
+--    archivo manualmente sobre el volumen existente.
