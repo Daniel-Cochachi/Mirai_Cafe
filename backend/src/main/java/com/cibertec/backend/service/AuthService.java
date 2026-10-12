@@ -4,6 +4,7 @@ import com.cibertec.backend.dto.auth.RegistroRequest;
 import com.cibertec.backend.entity.Rol;
 import com.cibertec.backend.entity.Usuario;
 import com.cibertec.backend.exception.EmailYaRegistradoException;
+import com.cibertec.backend.exception.RecursoNoEncontradoException;
 import com.cibertec.backend.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -97,7 +98,7 @@ public class AuthService {
     @Transactional
     public Usuario actualizarPerfil(Long usuarioId, ActualizarPerfilRequest request) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
         usuario.setNombre(request.nombre().trim());
         return usuarioRepository.save(usuario);
     }
@@ -106,7 +107,7 @@ public class AuthService {
     @Transactional
     public void cambiarPassword(Long usuarioId, CambiarPasswordRequest request) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
 
         // 1. Validar que la contraseña actual ingresada coincida con la de la BD
         boolean passwordCorrecto = passwordEncoder.matches(
