@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {
     ArrowUpRight,
     Coffee,
@@ -24,6 +25,7 @@ export function ProductCard({
 }: ProductCardProps) {
     const isDark = variant === 'dark'
     const hasStock = product.stock > 0
+    const [imageError, setImageError] = useState(false)
 
     return (
         <article
@@ -44,11 +46,12 @@ export function ProductCard({
                         : 'bg-[#efefed]',
                 ].join(' ')}
             >
-                {product.imagenUrl ? (
+                {product.imagenUrl && !imageError ? (
                     <img
                         src={product.imagenUrl}
                         alt={product.nombre}
                         loading="lazy"
+                        onError={() => setImageError(true)}
                         className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                     />
                 ) : (
