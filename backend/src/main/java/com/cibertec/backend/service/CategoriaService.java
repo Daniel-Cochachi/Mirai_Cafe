@@ -3,6 +3,7 @@ package com.cibertec.backend.service;
 import com.cibertec.backend.entity.Categoria;
 import com.cibertec.backend.exception.NombreDuplicadoException;
 import com.cibertec.backend.exception.RecursoNoEncontradoException;
+import com.cibertec.backend.exception.ReglaNegocioException;
 import com.cibertec.backend.repository.CategoriaRepository;
 import com.cibertec.backend.repository.ProductoRepository;
 import lombok.RequiredArgsConstructor;
@@ -61,7 +62,7 @@ public class CategoriaService {
     public void eliminar(Long id) {
 
         if (productoRepository.existsByCategoriaId(id)) {
-            throw new RuntimeException("No se puede eliminar la categoría ya que existe un producto de este tipo.");
+            throw new ReglaNegocioException("No se puede eliminar la categoría ya que existe un producto de este tipo.");
         }
         categoriaRepository.deleteById(id);
 

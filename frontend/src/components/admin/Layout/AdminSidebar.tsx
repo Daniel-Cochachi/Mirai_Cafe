@@ -31,7 +31,7 @@ export function AdminSidebar({ activeTab, onTabChange }: AdminSidebarProps) {
     const { user, logout } = useAuth()
     const navigate = useNavigate()
 
-    const menuItems: { id: AdminTab; label: string; icon: typeof LayoutDashboard }[] = [
+    const todosLosItems: { id: AdminTab; label: string; icon: typeof LayoutDashboard }[] = [
         { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
         { id: 'orders', label: 'Pedidos y Ventas', icon: ShoppingBag },
         { id: 'products', label: 'Productos', icon: LayoutGrid },
@@ -45,6 +45,14 @@ export function AdminSidebar({ activeTab, onTabChange }: AdminSidebarProps) {
         logout()
         navigate('/login')
     }
+
+    // El cajero solo ve el dashboard de ventas y los pedidos
+    const tabsCajero: AdminTab[] = ['dashboard', 'orders']
+
+    const menuItems =
+        user?.rol === 'ADMIN'
+            ? todosLosItems
+            : todosLosItems.filter((item) => tabsCajero.includes(item.id))
 
     return (
         <aside className="fixed left-0 top-0 flex h-screen w-64 flex-col justify-between border-r border-white/10 bg-[#0f0f10] p-5 text-white">

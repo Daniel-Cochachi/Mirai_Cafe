@@ -4,7 +4,6 @@ import { useAuth } from '../context/AuthContext'
 import { AdminLayout } from '../components/admin/Layout/AdminLayout'
 import type { AdminTab } from '../components/admin/Layout/AdminSidebar'
 
-// Módulos organizados
 import { DashboardOverview } from '../components/admin/dashboard/DashboardOverview'
 import { OrderManager } from '../components/admin/orders/OrderManager'
 import { ProductManager } from '../components/admin/products/ProductManager'
@@ -19,33 +18,44 @@ export function AdminPage() {
     const [activeTab, setActiveTab] = useState<AdminTab>('dashboard')
     const [isCreateOrderOpen, setIsCreateOrderOpen] = useState(false)
 
+    const esAdmin = user?.rol === 'ADMIN'
+    const esCajero = user?.rol === 'CAJERO'
+
     useEffect(() => {
         if (!isAuthenticated) {
             navigate('/login', { replace: true })
             return
         }
 
-        if (user?.rol !== 'ADMIN') {
+        if (!esAdmin && !esCajero) {
             navigate('/', { replace: true })
         }
-    }, [isAuthenticated, user, navigate])
+    }, [isAuthenticated, esAdmin, esCajero, navigate])
 
-    if (!isAuthenticated || user?.rol !== 'ADMIN') {
+    if (!isAuthenticated || (!esAdmin && !esCajero)) {
         return null
     }
 
-     return (
+    // El cajero solo puede entrar al dashboard y a pedidos/ventas
+    const cambiarTab = (tab: AdminTab) => {
+        const permitido = esAdmin || tab === 'dashboard' || tab === 'orders'
+
+        if (permitido) {
+            setActiveTab(tab)
+        }
+    }
+
+    return (
         <AdminLayout
             activeTab={activeTab}
-            onTabChange={setActiveTab}
+            onTabChange={cambiarTab}
             onActionClick={() => {
-                if (activeTab === 'dashboard') setActiveTab('orders')
-                if (activeTab === 'orders') setIsCreateOrderOpen(true) // 👈 1. AGREGA ESTA LÍNEA
+                if (activeTab === 'dashboard') cambiarTab('orders')
+                if (activeTab === 'orders') setIsCreateOrderOpen(true)
             }}
         >
-            {activeTab === 'dashboard' && <DashboardOverview onNavigateTab={setActiveTab} />}
-            
-            {/* 👇 2. CAMBIA ESTA LÍNEA DE ORDERS */}
+            {activeTab === 'dashboard' && <DashboardOverview onNavigateTab={cambiarTab} />}
+
             {activeTab === 'orders' && (
                 <OrderManager
                     isCreateOpen={isCreateOrderOpen}
@@ -59,5 +69,4 @@ export function AdminPage() {
             {activeTab === 'recipes' && <RecipeManager />}
         </AdminLayout>
     )
-    
 }

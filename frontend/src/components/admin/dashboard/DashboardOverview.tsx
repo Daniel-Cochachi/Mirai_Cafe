@@ -13,6 +13,7 @@ import { productService } from '../../../services/productService'
 import api from '../../../services/api'
 import type { AdminTab } from '../Layout/AdminSidebar'
 import type { Insumo } from '../../../types/inventory'
+import { useAuth } from '../../../context/AuthContext'
 
 interface DashboardOverviewProps {
     onNavigateTab: (tab: AdminTab) => void
@@ -28,6 +29,8 @@ interface PedidoItem {
 }
 
 export function DashboardOverview({ onNavigateTab }: DashboardOverviewProps) {
+    const { user } = useAuth()
+    const esAdmin = user?.rol === 'ADMIN'
     const [filtroEstado, setFiltroEstado] = useState<string>('TODOS')
     const [busqueda, setBusqueda] = useState<string>('')
 
@@ -42,7 +45,9 @@ export function DashboardOverview({ onNavigateTab }: DashboardOverviewProps) {
         try {
             const [prods, bajos, resPedidos] = await Promise.all([
                 productService.getAll(),
-                ingredientService.getLowStock(),
+                esAdmin
+                    ? ingredientService.getLowStock()
+                    : Promise.resolve([] as Insumo[]),
                 api.get('/orders'),
             ])
             setTotalProductos(prods.length)
@@ -141,12 +146,13 @@ export function DashboardOverview({ onNavigateTab }: DashboardOverviewProps) {
                 </div>
 
                 {/* 3. Insumos Críticos (Alerta Tostado / Terracota) */}
-                <div
-                    onClick={() => onNavigateTab('ingredients')}
-                    className="relative cursor-pointer overflow-hidden rounded-3xl border border-white/10 bg-[#17171a] p-7 text-white shadow-xl transition-all hover:translate-y-[-2px] hover:border-rose-500/40"
-                >
-                    <div className="flex items-center justify-between">
-                        <span className="text-sm font-bold uppercase tracking-wider text-white/60">
+                {esAdmin && (
+                    <div
+                        onClick={() => onNavigateTab('ingredients')}
+                        className="relative cursor-pointer overflow-hidden rounded-3xl border border-white/10 bg-[#17171a] p-7 text-white shadow-xl transition-all hover:translate-y-[-2px] hover:border-rose-500/40"
+                    >
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm font-bold uppercase tracking-wider text-white/60">
                             Stock Crítico
                         </span>
                         <div className="rounded-2xl bg-rose-500/15 p-3 text-rose-400">
@@ -162,7 +168,7 @@ export function DashboardOverview({ onNavigateTab }: DashboardOverviewProps) {
                         </p>
                     </div>
                 </div>
-
+                )}
                 {/* 4. Carta de Productos (Expreso Oscuro) */}
                 <div
                     onClick={() => onNavigateTab('products')}
@@ -303,6 +309,7 @@ export function DashboardOverview({ onNavigateTab }: DashboardOverviewProps) {
                 {/* 2.2 Columna Derecha: Alertas de Insumos + Enlace Directo a Carta */}
                 <div className="space-y-6 lg:col-span-1">
                     {/* Tarjeta Insumos Críticos */}
+                    {esAdmin && (
                     <div className="rounded-3xl border border-white/10 bg-[#121215] p-7 shadow-xl">
                         <div className="flex items-center justify-between border-b border-white/8 pb-4">
                             <div>
@@ -349,6 +356,7 @@ export function DashboardOverview({ onNavigateTab }: DashboardOverviewProps) {
                             <span>Gestionar Insumos e Inventario</span>
                         </button>
                     </div>
+                    )}
 
                     {/* Tarjeta Enlace a Carta Digital */}
                     <div className="rounded-3xl border border-amber-500/20 bg-gradient-to-br from-[#1a1410] to-[#121215] p-7 shadow-xl">
