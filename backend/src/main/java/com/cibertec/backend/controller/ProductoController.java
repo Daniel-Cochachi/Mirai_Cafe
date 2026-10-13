@@ -11,6 +11,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,6 +39,7 @@ public class ProductoController {
         return ProductoResponse.from(productoService.buscarPorId(id));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @CacheEvict(value = "productos", allEntries = true)
     @PostMapping
     public ResponseEntity<ProductoResponse> guardar(@RequestBody @Valid ProductoRequest producto) {
@@ -45,6 +47,7 @@ public class ProductoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevoProducto);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Caching(evict = {
             @CacheEvict(value = "producto", key = "#id"),
             @CacheEvict(value = "productos", allEntries = true)
@@ -54,6 +57,7 @@ public class ProductoController {
         return ProductoResponse.from(productoService.actualizar(id, producto));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Caching(evict = {
             @CacheEvict(value = "producto", key = "#id"),
             @CacheEvict(value = "productos", allEntries = true)
@@ -64,6 +68,7 @@ public class ProductoController {
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Caching(evict = {
             @CacheEvict(value = "producto", key = "#id"),
             @CacheEvict(value = "productos", allEntries = true)

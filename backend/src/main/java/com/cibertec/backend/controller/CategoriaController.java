@@ -5,6 +5,7 @@ import com.cibertec.backend.service.CategoriaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,17 +27,20 @@ public class CategoriaController {
         return categoriaService.buscarPorId(id);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity <Categoria> guardar(@RequestBody Categoria categoria) {
         Categoria nuevaCategoria = categoriaService.guardar(categoria);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevaCategoria);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public Categoria actualizar(@PathVariable Long id, @RequestBody Categoria categoria) {
         return categoriaService.actualizar(id, categoria);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         categoriaService.eliminar(id);
