@@ -124,5 +124,13 @@ public class GlobalExceptionHandler {
                                 .status(HttpStatus.CONFLICT)
                                 .body(response);
         }
+        @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+        public ResponseEntity<ErrorResponse> manejarIntegridadDatos(
+                org.springframework.dao.DataIntegrityViolationException exception) {
+                return respuesta(
+                        HttpStatus.CONFLICT, // Código 409
+                        "No se puede eliminar el producto porque tiene pedidos o recetas asociadas. En su lugar, desactiva su disponibilidad."
+                );
+        }
 
 }

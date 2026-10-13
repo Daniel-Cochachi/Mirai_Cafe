@@ -32,7 +32,12 @@ interface Pedido {
     detalles: DetallePedido[]
 }
 
-export function OrderManager() {
+interface OrderManagerProps {
+    isCreateOpen?: boolean
+    onCloseCreate?: () => void
+}
+
+export function OrderManager({ isCreateOpen, onCloseCreate }: OrderManagerProps) {
     const [pedidos, setPedidos] = useState<Pedido[]>([])
     const [cargando, setCargando] = useState<boolean>(true)
     const [filtroEstado, setFiltroEstado] = useState<string>('TODOS')
@@ -41,6 +46,12 @@ export function OrderManager() {
     const [mensaje, setMensaje] = useState<{ texto: string; tipo: 'exito' | 'error' } | null>(null)
     const [cancelarPedidoId, setCancelarPedidoId] = useState<number | null>(null)
     const [isCanceling, setIsCanceling] = useState<boolean>(false)
+    // Estados para crear pedido
+    const [productosDisponibles, setProductosDisponibles] = useState<any[]>([])
+    const [itemsPedido, setItemsPedido] = useState<{ productoId: number; cantidad: number }[]>([])
+    const [observacion, setObservacion] = useState('')
+    const [isSubmittingOrder, setIsSubmittingOrder] = useState(false)
+
 
     const cargarPedidos = async () => {
         setCargando(true)
@@ -58,6 +69,40 @@ export function OrderManager() {
     useEffect(() => {
         cargarPedidos()
     }, [filtroEstado])
+
+    useEffect(() => {
+        if (isCreateOpen) {
+            api.get('/products?available=true')
+                .then(res => setProductosDisponibles(res.data))
+                .catch(err => console.error('Error cargando productos:', err))
+            setItemsPedido([])
+            setObservacion('')
+        }
+    }, [isCreateOpen])
+    const handleCrearPedido = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (itemsPedido.length === 0) {
+            setMensaje({ texto: 'Debes agregar al menos un producto al pedido.', tipo: 'error' })
+            return
+        }
+        setIsSubmittingOrder(true)
+        try {
+            await api.post('/orders', {
+                observacion: observacion || 'Venta en mostrador',
+                items: itemsPedido,
+            })
+            setMensaje({ texto: 'Pedido creado exitosamente.', tipo: 'exito' })
+            if (onCloseCreate) onCloseCreate()
+            await cargarPedidos()
+        } catch (err: any) {
+            setMensaje({
+                texto: err.response?.data?.message || 'Error al crear el pedido.',
+                tipo: 'error',
+            })
+        } finally {
+            setIsSubmittingOrder(false)
+        }
+    }
 
     const handleCambiarEstado = async (id: number, nuevoEstado: string) => {
         try {
@@ -147,11 +192,10 @@ export function OrderManager() {
             {/* Mensajes flotantes de feedback */}
             {mensaje && (
                 <div
-                    className={`mt-6 flex items-center justify-between rounded-2xl border p-4 text-xs font-bold ${
-                        mensaje.tipo === 'exito'
+                    className={`mt-6 flex items-center justify-between rounded-2xl border p-4 text-xs font-bold ${mensaje.tipo === 'exito'
                             ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
                             : 'border-rose-500/30 bg-rose-500/10 text-rose-400'
-                    }`}
+                        }`}
                 >
                     <span>{mensaje.texto}</span>
                     <button type="button" onClick={() => setMensaje(null)} className="p-1 hover:text-white">
@@ -388,6 +432,126 @@ export function OrderManager() {
                 onConfirm={confirmarCancelarPedido}
                 onCancel={() => setCancelarPedidoId(null)}
             />
+            {/* Modal de Crear Pedido en Mostrador */}
+            {isCreateOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md">
+                    <div className="w-full max-w-lg rounded-3xl border border-white/10 bg-[#121215] p-7 shadow-2xl">
+                        <div className="flex items-center justify-between border-b border-white/8 pb-4">
+                            <div>
+                                <h3 className="text-xl font-black text-white">Nuevo Pedido en Mostrador</h3>
+                                <p className="text-xs text-white/40">Selecciona los productos y cantidades para la venta</p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={onCloseCreate}
+                                className="rounded-xl p-2 text-white/40 hover:bg-white/10 hover:text-white"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleCrearPedido} className="mt-5 space-y-4">
+                            <div>
+                                <label className="text-xs font-bold uppercase tracking-wider text-amber-500">
+                                    Agregar Producto
+                                </label>
+                                <select
+                                    onChange={(e) => {
+                                        const prodId = Number(e.target.value)
+                                        if (!prodId) return
+                                        setItemsPedido(prev => {
+                                            const existe = prev.find(item => item.productoId === prodId)
+                                            if (existe) {
+                                                return prev.map(item => item.productoId === prodId ? { ...item, cantidad: item.cantidad + 1 } : item)
+                                            }
+                                            return [...prev, { productoId: prodId, cantidad: 1 }]
+                                        })
+                                        e.target.value = ''
+                                    }}
+                                    className="mt-1.5 w-full rounded-2xl border border-white/10 bg-[#1c1c20] px-4 py-3 text-sm text-white focus:border-amber-500 focus:outline-none"
+                                >
+                                    <option value="">-- Seleccionar producto para agregar --</option>
+                                    {productosDisponibles.map(p => (
+                                        <option key={p.id} value={p.id}>
+                                            {p.nombre} (S/ {Number(p.precio).toFixed(2)}) - Stock: {p.stock}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="max-h-48 space-y-2 overflow-y-auto pr-1">
+                                {itemsPedido.length === 0 ? (
+                                    <p className="py-4 text-center text-xs text-white/30 italic">
+                                        No has seleccionado ningún producto aún.
+                                    </p>
+                                ) : (
+                                    itemsPedido.map((item, idx) => {
+                                        const prod = productosDisponibles.find(p => p.id === item.productoId)
+                                        return (
+                                            <div key={idx} className="flex items-center justify-between rounded-2xl border border-white/5 bg-white/5 p-3">
+                                                <div>
+                                                    <p className="text-sm font-bold text-white">{prod?.nombre}</p>
+                                                    <p className="text-xs text-amber-400">S/ {Number(prod?.precio || 0).toFixed(2)} c/u</p>
+                                                </div>
+                                                <div className="flex items-center gap-3">
+                                                    <input
+                                                        type="number"
+                                                        min="1"
+                                                        max={prod?.stock || 99}
+                                                        value={item.cantidad}
+                                                        onChange={(e) => {
+                                                            const val = Math.max(1, Number(e.target.value))
+                                                            setItemsPedido(prev => prev.map((it, i) => i === idx ? { ...it, cantidad: val } : it))
+                                                        }}
+                                                        className="w-16 rounded-xl border border-white/10 bg-[#1c1c20] px-2 py-1 text-center text-sm font-bold text-white focus:outline-none"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setItemsPedido(prev => prev.filter((_, i) => i !== idx))}
+                                                        className="p-1 text-red-400 hover:text-red-300"
+                                                    >
+                                                        <X size={16} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )
+                                    })
+                                )}
+                            </div>
+
+                            <div>
+                                <label className="text-xs font-bold uppercase tracking-wider text-white/50">
+                                    Observación / Mesa
+                                </label>
+                                <input
+                                    type="text"
+                                    placeholder="Ej. Mesa 4 o Para llevar"
+                                    value={observacion}
+                                    onChange={(e) => setObservacion(e.target.value)}
+                                    className="mt-1.5 w-full rounded-2xl border border-white/10 bg-[#1c1c20] px-4 py-2.5 text-sm text-white focus:border-amber-500 focus:outline-none"
+                                />
+                            </div>
+
+                            <div className="flex items-center justify-end gap-3 border-t border-white/8 pt-5">
+                                <button
+                                    type="button"
+                                    onClick={onCloseCreate}
+                                    className="rounded-xl px-5 py-2.5 text-sm font-semibold text-white/50 hover:bg-white/5 hover:text-white"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={isSubmittingOrder || itemsPedido.length === 0}
+                                    className="rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-amber-900/20 transition-all hover:from-amber-400 hover:to-amber-500 disabled:opacity-40"
+                                >
+                                    {isSubmittingOrder ? 'Guardando...' : 'Crear Pedido'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

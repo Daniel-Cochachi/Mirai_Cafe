@@ -27,7 +27,7 @@ public class PedidoController {
     private final PedidoService pedidoService;
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('CLIENTE', 'CAJERO')")
+    @PreAuthorize("hasAnyRole('CLIENTE', 'CAJERO', 'ADMIN')")
     public ResponseEntity<PedidoResponse> crearPedido(
             @Valid @RequestBody CrearPedidoRequest request,
             @AuthenticationPrincipal Usuario usuario

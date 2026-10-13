@@ -74,17 +74,17 @@ public class SecurityConfig {
                                                 // Rutas públicas de autenticación
                                                 // Swagger / OpenAPI
                                                 .requestMatchers(
-                                                        "/swagger-ui/**",
-                                                        "/swagger-ui.html",
-                                                        "/v3/api-docs/**"
-                                                ).permitAll()
+                                                                "/swagger-ui/**",
+                                                                "/swagger-ui.html",
+                                                                "/v3/api-docs/**")
+                                                .permitAll()
 
                                                 .requestMatchers(
                                                                 "/api/v1/auth/register",
                                                                 "/api/v1/auth/login")
                                                 .permitAll()
                                                 // Endpoint de salud público
-                                                .requestMatchers("/api/v1/health").permitAll()
+                                                .requestMatchers("/api/v1/health", "/error").permitAll()
                                                 // Catálogo público: cualquier visitante puede ver productos y
                                                 // categorías (solo lectura GET)
                                                 .requestMatchers(HttpMethod.GET, "/api/v1/products/**").permitAll()
@@ -106,18 +106,15 @@ public class SecurityConfig {
                 configuration.setAllowedOriginPatterns(List.of(
                                 "http://localhost:5173",
                                 "http://localhost:3000",
-                                "https://*.vercel.app"
-                ));
+                                "https://*.vercel.app"));
                 // Métodos HTTP permitidos
                 configuration.setAllowedMethods(List.of(
-                                "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
-                ));
+                                "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
                 // Encabezados permitidos (incluyendo Authorization para enviar el JWT)
                 configuration.setAllowedHeaders(List.of(
                                 "Authorization",
                                 "Content-Type",
-                                "X-Requested-With"
-                ));
+                                "X-Requested-With"));
                 configuration.setAllowCredentials(true);
                 UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
                 source.registerCorsConfiguration("/**", configuration);

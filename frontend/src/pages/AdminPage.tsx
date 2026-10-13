@@ -17,6 +17,7 @@ export function AdminPage() {
     const navigate = useNavigate()
     const { isAuthenticated, user } = useAuth()
     const [activeTab, setActiveTab] = useState<AdminTab>('dashboard')
+    const [isCreateOrderOpen, setIsCreateOrderOpen] = useState(false)
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -33,16 +34,24 @@ export function AdminPage() {
         return null
     }
 
-    return (
+     return (
         <AdminLayout
             activeTab={activeTab}
             onTabChange={setActiveTab}
             onActionClick={() => {
                 if (activeTab === 'dashboard') setActiveTab('orders')
+                if (activeTab === 'orders') setIsCreateOrderOpen(true) // 👈 1. AGREGA ESTA LÍNEA
             }}
         >
             {activeTab === 'dashboard' && <DashboardOverview onNavigateTab={setActiveTab} />}
-            {activeTab === 'orders' && <OrderManager />}
+            
+            {/* 👇 2. CAMBIA ESTA LÍNEA DE ORDERS */}
+            {activeTab === 'orders' && (
+                <OrderManager
+                    isCreateOpen={isCreateOrderOpen}
+                    onCloseCreate={() => setIsCreateOrderOpen(false)}
+                />
+            )}
             {activeTab === 'products' && <ProductManager />}
             {activeTab === 'categories' && <CategoryManager />}
             {activeTab === 'ingredients' && <InsumoManager />}
@@ -50,4 +59,5 @@ export function AdminPage() {
             {activeTab === 'recipes' && <RecipeManager />}
         </AdminLayout>
     )
+    
 }
