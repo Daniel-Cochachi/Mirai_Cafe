@@ -25,7 +25,6 @@ export function AdminHeader({ activeTab, onActionClick }: AdminHeaderProps) {
         categories: {
             title: 'Categorías del Menú',
             subtitle: 'Clasificación de comidas, bebidas y postres',
-            actionLabel: '+ Nueva Categoría',
         },
         ingredients: {
             title: 'Inventario de Insumos',
