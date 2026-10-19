@@ -43,6 +43,10 @@ export function AdminHeader({ activeTab, onActionClick }: AdminHeaderProps) {
             subtitle: 'Relación de ingredientes requeridos por producto',
             actionLabel: '+ Configurar Receta',
         },
+        users: {
+            title: 'Gestión de Usuarios',
+            subtitle: 'Administración de cuentas, roles y accesos al sistema',
+        },
     }
 
     const currentConfig = tabConfig[activeTab]

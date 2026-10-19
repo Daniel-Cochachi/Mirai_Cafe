@@ -11,6 +11,8 @@ import { CategoryManager } from '../components/admin/categories/CategoryManager'
 import { InsumoManager } from '../components/admin/inventory/InsumoManager'
 import { MovementManager } from '../components/admin/inventory/MovementManager'
 import { RecipeManager } from '../components/admin/inventory/RecipeManager'
+import { UserManager } from '../components/admin/users/UserManager'
+
 
 export function AdminPage() {
     const navigate = useNavigate()
@@ -67,6 +69,7 @@ export function AdminPage() {
             {activeTab === 'ingredients' && <InsumoManager />}
             {activeTab === 'movements' && <MovementManager />}
             {activeTab === 'recipes' && <RecipeManager />}
+            {activeTab === 'users' && <UserManager />}
         </AdminLayout>
     )
 }

@@ -8,6 +8,7 @@ import {
     Package,
     ShoppingBag,
     Tag,
+    Users,
 } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../../context/AuthContext'
@@ -21,6 +22,7 @@ export type AdminTab =
     | 'ingredients'
     | 'movements'
     | 'recipes'
+    | 'users'
 
 interface AdminSidebarProps {
     activeTab: AdminTab
@@ -39,6 +41,7 @@ export function AdminSidebar({ activeTab, onTabChange }: AdminSidebarProps) {
         { id: 'ingredients', label: 'Insumos', icon: Package },
         { id: 'movements', label: 'Movimientos', icon: ArrowLeftRight },
         { id: 'recipes', label: 'Recetas', icon: ChefHat },
+        { id: 'users', label: 'Usuarios', icon: Users },
     ]
 
     const handleLogout = () => {
