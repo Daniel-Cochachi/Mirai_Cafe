@@ -35,8 +35,17 @@ export interface User {
     fechaRegistro?: string
 }
 
+export interface UpdateProfileRequest {
+    nombre: string
+}
+
+export interface ChangePasswordRequest {
+    passwordActual: string
+    passwordNuevo: string
+}
+
 export interface ApiError {
     status: number
     message: string
     timestamp: string
-}
+}

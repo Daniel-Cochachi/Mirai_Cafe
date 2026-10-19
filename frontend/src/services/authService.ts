@@ -1,8 +1,10 @@
 import api from './api'
 import type {
     AuthResponse,
+    ChangePasswordRequest,
     LoginRequest,
     RegisterRequest,
+    UpdateProfileRequest,
     User,
 } from '../types/auth'
 
@@ -34,4 +36,26 @@ export const authService = {
 
         return response.data
     },
-}
+
+    async updateProfile(
+        data: UpdateProfileRequest,
+    ): Promise<User> {
+        const response = await api.patch<User>(
+            '/auth/me',
+            data,
+        )
+
+        return response.data
+    },
+
+    async changePassword(
+        data: ChangePasswordRequest,
+    ): Promise<{ message?: string }> {
+        const response = await api.patch<{ message?: string }>(
+            '/auth/me/password',
+            data,
+        )
+
+        return response.data
+    },
+}

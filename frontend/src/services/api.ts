@@ -27,7 +27,12 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response?.status === 401) {
+        const url = error.config?.url || '';
+        const isAuthCredentialCheck =
+            url.includes('/auth/login') ||
+            url.includes('/auth/me/password');
+
+        if (error.response?.status === 401 && !isAuthCredentialCheck) {
             localStorage.removeItem('token');
             localStorage.removeItem('auth_user');
             if (window.location.pathname !== '/login') {
@@ -37,6 +42,7 @@ api.interceptors.response.use(
         return Promise.reject(error);
     }
 );
+
 
 
 export default api;

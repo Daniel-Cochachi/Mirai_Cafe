@@ -9,7 +9,7 @@ import {
 } from 'react-router-dom'
 
 import axios from 'axios'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Check, Eye, EyeOff } from 'lucide-react'
 
 import headerMenu from '../assets/header_menu.webp'
 import { MiraiLogo } from '../components/brand/MiraiLogo'
@@ -34,6 +34,8 @@ export function RegisterPage() {
         confirmPassword: '',
     })
 
+    const [showPassword, setShowPassword] = useState(false)
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false)
     const [error, setError] = useState('')
     const [isLoading, setIsLoading] = useState(false)
 
@@ -53,17 +55,29 @@ export function RegisterPage() {
         event.preventDefault()
         setError('')
 
-        if (form.password !== form.confirmPassword) {
-            setError('Las contraseñas no coinciden')
+        const cleanNombre = form.nombre.trim()
+        const cleanEmail = form.email.trim()
+
+        if (cleanNombre.length < 2) {
+            setError('El nombre debe tener al menos 2 caracteres.')
+            return
+        }
+
+        if (!cleanEmail.includes('@') || !cleanEmail.includes('.')) {
+            setError('Ingresa un correo electrónico válido.')
             return
         }
 
         if (form.password.length < 8) {
-            setError(
-                'La contraseña debe tener al menos 8 caracteres',
-            )
+            setError('La contraseña debe tener al menos 8 caracteres.')
             return
         }
+
+        if (form.password !== form.confirmPassword) {
+            setError('Las contraseñas no coinciden.')
+            return
+        }
+
 
         setIsLoading(true)
 
@@ -225,24 +239,49 @@ export function RegisterPage() {
                                     Contraseña
                                 </label>
 
-                                <input
-                                    id="password"
-                                    type="password"
-                                    value={form.password}
-                                    onChange={(event) =>
-                                        updateField(
-                                            'password',
-                                            event.target.value,
-                                        )
-                                    }
-                                    placeholder="Mínimo 8 caracteres"
-                                    autoComplete="new-password"
-                                    minLength={8}
-                                    maxLength={100}
-                                    required
-                                    disabled={isLoading}
-                                    className="h-12 w-full rounded-xl border border-white/10 bg-[#151515] px-4 text-white outline-none transition placeholder:text-white/25 focus:border-mirai-accent focus:ring-3 focus:ring-mirai-accent/10 disabled:cursor-not-allowed disabled:opacity-60"
-                                />
+                                <div className="relative">
+                                    <input
+                                        id="password"
+                                        type={showPassword ? 'text' : 'password'}
+                                        value={form.password}
+                                        onChange={(event) =>
+                                            updateField(
+                                                'password',
+                                                event.target.value,
+                                            )
+                                        }
+                                        placeholder="Mínimo 8 caracteres"
+                                        autoComplete="new-password"
+                                        minLength={8}
+                                        maxLength={100}
+                                        required
+                                        disabled={isLoading}
+                                        className="h-12 w-full rounded-xl border border-white/10 bg-[#151515] pl-4 pr-11 text-white outline-none transition placeholder:text-white/25 focus:border-mirai-accent focus:ring-3 focus:ring-mirai-accent/10 disabled:cursor-not-allowed disabled:opacity-60"
+                                    />
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword((prev) => !prev)}
+                                        tabIndex={-1}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-white/40 hover:text-white transition-colors"
+                                        aria-label={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
+                                    >
+                                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                    </button>
+                                </div>
+
+                                {form.password.length > 0 && (
+                                    <p className={`mt-1.5 flex items-center gap-1 text-[11px] ${form.password.length >= 8 ? 'text-green-400' : 'text-amber-400'}`}>
+                                        {form.password.length >= 8 ? (
+                                            <>
+                                                <Check size={12} />
+                                                Mínimo 8 caracteres cumplido
+                                            </>
+                                        ) : (
+                                            `Faltan ${8 - form.password.length} caracteres`
+                                        )}
+                                    </p>
+                                )}
                             </div>
 
                             <div>
@@ -253,24 +292,49 @@ export function RegisterPage() {
                                     Confirmar
                                 </label>
 
-                                <input
-                                    id="confirmPassword"
-                                    type="password"
-                                    value={form.confirmPassword}
-                                    onChange={(event) =>
-                                        updateField(
-                                            'confirmPassword',
-                                            event.target.value,
-                                        )
-                                    }
-                                    placeholder="Repite la contraseña"
-                                    autoComplete="new-password"
-                                    minLength={8}
-                                    maxLength={100}
-                                    required
-                                    disabled={isLoading}
-                                    className="h-12 w-full rounded-xl border border-white/10 bg-[#151515] px-4 text-white outline-none transition placeholder:text-white/25 focus:border-mirai-accent focus:ring-3 focus:ring-mirai-accent/10 disabled:cursor-not-allowed disabled:opacity-60"
-                                />
+                                <div className="relative">
+                                    <input
+                                        id="confirmPassword"
+                                        type={showConfirmPassword ? 'text' : 'password'}
+                                        value={form.confirmPassword}
+                                        onChange={(event) =>
+                                            updateField(
+                                                'confirmPassword',
+                                                event.target.value,
+                                            )
+                                        }
+                                        placeholder="Repite la contraseña"
+                                        autoComplete="new-password"
+                                        minLength={8}
+                                        maxLength={100}
+                                        required
+                                        disabled={isLoading}
+                                        className="h-12 w-full rounded-xl border border-white/10 bg-[#151515] pl-4 pr-11 text-white outline-none transition placeholder:text-white/25 focus:border-mirai-accent focus:ring-3 focus:ring-mirai-accent/10 disabled:cursor-not-allowed disabled:opacity-60"
+                                    />
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowConfirmPassword((prev) => !prev)}
+                                        tabIndex={-1}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-white/40 hover:text-white transition-colors"
+                                        aria-label={showConfirmPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
+                                    >
+                                        {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                    </button>
+                                </div>
+
+                                {form.confirmPassword.length > 0 && (
+                                    <p className={`mt-1.5 flex items-center gap-1 text-[11px] ${form.password === form.confirmPassword ? 'text-green-400' : 'text-red-400'}`}>
+                                        {form.password === form.confirmPassword ? (
+                                            <>
+                                                <Check size={12} />
+                                                Las contraseñas coinciden
+                                            </>
+                                        ) : (
+                                            'Las contraseñas no coinciden'
+                                        )}
+                                    </p>
+                                )}
                             </div>
                         </div>
 

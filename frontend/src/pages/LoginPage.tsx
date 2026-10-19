@@ -9,7 +9,7 @@ import {
 } from 'react-router-dom'
 
 import axios from 'axios'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Eye, EyeOff } from 'lucide-react'
 
 import heroCafe from '../assets/hero-cafe.webp'
 import { MiraiLogo } from '../components/brand/MiraiLogo'
@@ -30,6 +30,7 @@ export function LoginPage() {
             password: '',
         })
 
+    const [showPassword, setShowPassword] = useState(false)
     const [error, setError] = useState('')
     const [isLoading, setIsLoading] = useState(false)
 
@@ -38,11 +39,27 @@ export function LoginPage() {
     ) => {
         event.preventDefault()
         setError('')
+
+        const cleanEmail = credentials.email.trim()
+        if (!cleanEmail) {
+            setError('Por favor, ingresa tu correo electrónico.')
+            return
+        }
+
         setIsLoading(true)
 
         try {
-            await login(credentials)
-            navigate('/')
+            const loggedUser = await login({
+                email: cleanEmail,
+                password: credentials.password,
+            })
+
+            // Redirección inteligente según el rol del usuario
+            if (loggedUser.rol === 'ADMIN' || loggedUser.rol === 'CAJERO') {
+                navigate('/admin', { replace: true })
+            } else {
+                navigate('/', { replace: true })
+            }
         } catch (requestError) {
             if (axios.isAxiosError<ApiError>(requestError)) {
                 setError(
@@ -56,6 +73,7 @@ export function LoginPage() {
             setIsLoading(false)
         }
     }
+
 
     return (
         <main className="grid min-h-screen bg-[#0a0a0a] lg:grid-cols-[1.1fr_0.9fr]">
@@ -208,23 +226,35 @@ export function LoginPage() {
                                 Contraseña
                             </label>
 
-                            <input
-                                id="password"
-                                type="password"
-                                value={credentials.password}
-                                onChange={(event) =>
-                                    setCredentials({
-                                        ...credentials,
-                                        password:
-                                            event.target.value,
-                                    })
-                                }
-                                placeholder="Ingresa tu contraseña"
-                                autoComplete="current-password"
-                                required
-                                disabled={isLoading}
-                                className="h-13 w-full rounded-xl border border-white/10 bg-[#151515] px-4 text-white outline-none transition placeholder:text-white/25 focus:border-mirai-accent focus:ring-3 focus:ring-mirai-accent/10 disabled:cursor-not-allowed disabled:opacity-60"
-                            />
+                            <div className="relative">
+                                <input
+                                    id="password"
+                                    type={showPassword ? 'text' : 'password'}
+                                    value={credentials.password}
+                                    onChange={(event) =>
+                                        setCredentials({
+                                            ...credentials,
+                                            password:
+                                                event.target.value,
+                                        })
+                                    }
+                                    placeholder="Ingresa tu contraseña"
+                                    autoComplete="current-password"
+                                    required
+                                    disabled={isLoading}
+                                    className="h-13 w-full rounded-xl border border-white/10 bg-[#151515] pl-4 pr-12 text-white outline-none transition placeholder:text-white/25 focus:border-mirai-accent focus:ring-3 focus:ring-mirai-accent/10 disabled:cursor-not-allowed disabled:opacity-60"
+                                />
+
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword((prev) => !prev)}
+                                    tabIndex={-1}
+                                    className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-white/40 hover:text-white transition-colors"
+                                    aria-label={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
+                                >
+                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
+                            </div>
                         </div>
 
                         <button

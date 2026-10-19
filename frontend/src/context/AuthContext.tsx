@@ -16,8 +16,9 @@ interface AuthContextValue {
     user: AuthUser | null
     token: string | null
     isAuthenticated: boolean
-    login: (credentials: LoginRequest) => Promise<void>
+    login: (credentials: LoginRequest) => Promise<AuthUser>
     logout: () => void
+    updateUser: (updatedData: Partial<AuthUser>) => void
 }
 
 interface AuthProviderProps {
@@ -56,7 +57,7 @@ export function AuthProvider({
 
     const login = async (
         credentials: LoginRequest,
-    ): Promise<void> => {
+    ): Promise<AuthUser> => {
         const response =
             await authService.login(credentials)
 
@@ -75,6 +76,8 @@ export function AuthProvider({
 
         setToken(response.token)
         setUser(authenticatedUser)
+
+        return authenticatedUser
     }
 
     const logout = (): void => {
@@ -85,12 +88,27 @@ export function AuthProvider({
         setUser(null)
     }
 
+    const updateUser = (
+        updatedData: Partial<AuthUser>,
+    ): void => {
+        setUser((currentUser) => {
+            if (!currentUser) return null
+            const updated = { ...currentUser, ...updatedData }
+            localStorage.setItem(
+                'auth_user',
+                JSON.stringify(updated),
+            )
+            return updated
+        })
+    }
+
     const value: AuthContextValue = {
         user,
         token,
         isAuthenticated: Boolean(token),
         login,
         logout,
+        updateUser,
     }
 
     return (
