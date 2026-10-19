@@ -21,7 +21,6 @@ export function AdminHeader({ activeTab, onActionClick }: AdminHeaderProps) {
         products: {
             title: 'Carta de Productos',
             subtitle: 'Gestión de precios, fotos y disponibilidad',
-            actionLabel: '+ Nuevo Producto',
         },
         categories: {
             title: 'Categorías del Menú',
