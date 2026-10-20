@@ -498,6 +498,14 @@ export function OrderManager({ isCreateOpen, onCloseCreate }: OrderManagerProps)
                     </div>
                 </div>
 
+                {/* Error Banner si la carga falla */}
+                {error && (
+                    <div className="mt-4 flex items-center gap-2.5 rounded-2xl border border-rose-500/30 bg-rose-500/10 p-4 text-xs font-semibold text-rose-300">
+                        <AlertCircle size={16} className="shrink-0" />
+                        <span>{error}</span>
+                    </div>
+                )}
+
                 {/* 4. Tabla de Pedidos */}
                 <div className="mt-6 overflow-hidden rounded-2xl border border-white/5 bg-[#18181c]/70 shadow-lg">
                     <div className="overflow-x-auto">
