@@ -15,6 +15,7 @@ import {
     Mail,
     Pencil,
     ShieldCheck,
+    ShoppingBag,
     UserRound,
     X,
 } from 'lucide-react'
@@ -350,6 +351,14 @@ export function ProfilePage() {
 
                                     {/* Acciones Rápidas */}
                                     <div className="mt-6 space-y-2 border-t border-white/8 pt-6">
+                                        <button
+                                            onClick={() => navigate('/mis-pedidos')}
+                                            className="flex w-full cursor-pointer items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white/90 transition hover:bg-white/10 hover:text-white"
+                                        >
+                                            <ShoppingBag size={16} className="text-mirai-accent" />
+                                            Mis pedidos
+                                        </button>
+
                                         <button
                                             onClick={handleOpenEditName}
                                             className="flex w-full cursor-pointer items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white/90 transition hover:bg-white/10 hover:text-white"

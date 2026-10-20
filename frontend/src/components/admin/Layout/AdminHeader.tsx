@@ -16,7 +16,6 @@ export function AdminHeader({ activeTab, onActionClick }: AdminHeaderProps) {
         orders: {
             title: 'Pedidos y Ventas',
             subtitle: 'Control de estados, caja y pedidos entrantes',
-            actionLabel: '+ Crear Pedido',
         },
         products: {
             title: 'Carta de Productos',

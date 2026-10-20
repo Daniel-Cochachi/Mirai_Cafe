@@ -54,8 +54,13 @@ export function LoginPage() {
                 password: credentials.password,
             })
 
-            // Redirección inteligente según el rol del usuario
-            if (loggedUser.rol === 'ADMIN' || loggedUser.rol === 'CAJERO') {
+            const searchParams = new URLSearchParams(window.location.search)
+            const redirectUrl = searchParams.get('redirect')
+
+            // Redirección inteligente respetando el redirect del cliente o según su rol
+            if (redirectUrl) {
+                navigate(redirectUrl, { replace: true })
+            } else if (loggedUser.rol === 'ADMIN' || loggedUser.rol === 'CAJERO') {
                 navigate('/admin', { replace: true })
             } else {
                 navigate('/', { replace: true })

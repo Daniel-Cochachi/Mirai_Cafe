@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import {
-    ArrowUpRight,
+    Check,
     Coffee,
+    ShoppingBag,
 } from 'lucide-react'
 
-import { Link } from 'react-router-dom'
-
+import { useCart } from '../../context/CartContext'
 import type { Product } from '../../types/product'
 
 interface ProductCardProps {
@@ -26,6 +26,25 @@ export function ProductCard({
     const isDark = variant === 'dark'
     const hasStock = product.stock > 0
     const [imageError, setImageError] = useState(false)
+    const [justAdded, setJustAdded] = useState(false)
+    const [maxStockReached, setMaxStockReached] = useState(false)
+    const { addToCart } = useCart()
+
+    const handleAddToCart = (e: React.MouseEvent) => {
+        e.preventDefault()
+        e.stopPropagation()
+        if (!hasStock) return
+
+        const success = addToCart(product, 1)
+        if (success) {
+            setJustAdded(true)
+            setMaxStockReached(false)
+            setTimeout(() => setJustAdded(false), 1200)
+        } else {
+            setMaxStockReached(true)
+            setTimeout(() => setMaxStockReached(false), 1500)
+        }
+    }
 
     return (
         <article
@@ -145,20 +164,38 @@ export function ProductCard({
                         </p>
                     </div>
 
-                    <Link
-                        to={`/menu?productId=${product.id}`}
-                        aria-label={`Ver ${product.nombre}`}
+                    <button
+                        type="button"
+                        disabled={!hasStock}
+                        onClick={handleAddToCart}
+                        aria-label={`Agregar ${product.nombre} al pedido`}
                         className={[
-                            'flex h-11 w-11 items-center justify-center rounded-full transition',
-                            hasStock
+                            'flex h-11 items-center gap-1.5 rounded-xl px-3.5 text-xs font-bold transition active:scale-95 cursor-pointer',
+                            justAdded
+                                ? 'bg-emerald-500 text-black shadow-md shadow-emerald-500/20'
+                                : hasStock
                                 ? isDark
                                     ? 'bg-mirai-accent text-white hover:bg-mirai-accent-dark'
                                     : 'bg-mirai-primary-dark text-white hover:bg-mirai-accent'
                                 : 'pointer-events-none bg-white/5 text-white/20',
                         ].join(' ')}
                     >
-                        <ArrowUpRight size={19} />
-                    </Link>
+                        {justAdded ? (
+                            <>
+                                <Check size={16} />
+                                <span>¡Listo!</span>
+                            </>
+                        ) : maxStockReached ? (
+                            <span className="text-amber-400 font-extrabold">¡Stock máx!</span>
+                        ) : hasStock ? (
+                            <>
+                                <ShoppingBag size={15} />
+                                <span>Agregar</span>
+                            </>
+                        ) : (
+                            <span>Agotado</span>
+                        )}
+                    </button>
                 </div>
             </div>
         </article>

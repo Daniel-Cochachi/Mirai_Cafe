@@ -4,6 +4,7 @@ import {
     LayoutDashboard,
     LogOut,
     Menu,
+    ShoppingBag,
     UserRound,
     X,
 } from 'lucide-react'
@@ -15,6 +16,7 @@ import {
 } from 'react-router-dom'
 
 import { useAuth } from '../../context/AuthContext'
+import { useCart } from '../../context/CartContext'
 import { MiraiLogo } from '../brand/MiraiLogo'
 
 export function Navbar() {
@@ -25,6 +27,8 @@ export function Navbar() {
         isAuthenticated,
         logout,
     } = useAuth()
+
+    const { totalItems, openCart } = useCart()
 
     const [isMenuOpen, setIsMenuOpen] = useState(false)
 
@@ -106,6 +110,22 @@ export function Navbar() {
 
                 {/* Acciones de escritorio */}
                 <div className="hidden items-center gap-3 md:flex">
+                    {/* Botón Carrito de Compras */}
+                    <button
+                        type="button"
+                        onClick={openCart}
+                        className="relative flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-white/15 bg-white/5 px-3.5 text-xs font-bold text-white transition hover:border-amber-400/40 hover:bg-white/10 active:scale-95"
+                        aria-label="Ver pedido en curso"
+                    >
+                        <ShoppingBag size={17} className="text-amber-400" />
+                        <span>Pedido</span>
+                        {totalItems > 0 && (
+                            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-black text-black shadow-md shadow-amber-500/30">
+                                {totalItems}
+                            </span>
+                        )}
+                    </button>
+
                     {isAuthenticated ? (
                         <>
                             {(user?.rol === 'ADMIN' || user?.rol === 'CAJERO') && (
@@ -156,24 +176,41 @@ export function Navbar() {
                     )}
                 </div>
 
-                {/* Botón del menú móvil */}
-                <button
-                    type="button"
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    aria-label={
-                        isMenuOpen
-                            ? 'Cerrar menú'
-                            : 'Abrir menú'
-                    }
-                    aria-expanded={isMenuOpen}
-                    className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg text-white transition hover:bg-white/10 md:hidden"
-                >
-                    {isMenuOpen ? (
-                        <X size={24} />
-                    ) : (
-                        <Menu size={24} />
-                    )}
-                </button>
+                {/* Acciones móviles (Carrito + Hamburguesa) */}
+                <div className="flex items-center gap-2 md:hidden">
+                    <button
+                        type="button"
+                        onClick={openCart}
+                        className="relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-white/15 bg-white/5 text-amber-400 transition hover:bg-white/10"
+                        aria-label="Ver comanda"
+                    >
+                        <ShoppingBag size={19} />
+                        {totalItems > 0 && (
+                            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-[9px] font-black text-black">
+                                {totalItems}
+                            </span>
+                        )}
+                    </button>
+
+                    {/* Botón del menú móvil */}
+                    <button
+                        type="button"
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        aria-label={
+                            isMenuOpen
+                                ? 'Cerrar menú'
+                                : 'Abrir menú'
+                        }
+                        aria-expanded={isMenuOpen}
+                        className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg text-white transition hover:bg-white/10"
+                    >
+                        {isMenuOpen ? (
+                            <X size={24} />
+                        ) : (
+                            <Menu size={24} />
+                        )}
+                    </button>
+                </div>
             </nav>
 
             {/* Navegación móvil */}
