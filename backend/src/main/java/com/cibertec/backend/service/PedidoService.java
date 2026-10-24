@@ -303,7 +303,7 @@ public class PedidoService {
     // 5. Cancelar pedido (devuelve el stock a los productos)
     @Transactional
     public PedidoResponse cancelarPedido(Long pedidoId, Usuario usuarioAutenticado) {
-        Pedido pedido = pedidoRepository.findById(pedidoId)
+        Pedido pedido = pedidoRepository.buscarPorIdConBloqueo(pedidoId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Pedido no encontrado: " + pedidoId));
         boolean esAdminOCajero = usuarioAutenticado.getRol() == Rol.ADMIN || usuarioAutenticado.getRol() == Rol.CAJERO;
         if (!esAdminOCajero && !pedido.getUsuario().getId().equals(usuarioAutenticado.getId())) {
