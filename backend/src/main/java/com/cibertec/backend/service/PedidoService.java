@@ -221,16 +221,24 @@ public class PedidoService {
     }
     // 2. Listado general para Admin/Cajero con filtros Specifications
     @Transactional(readOnly = true)
-    public List<PedidoResponse> listarTodos(EstadoPedido estado, LocalDate desde, LocalDate hasta) {
-        Specification<Pedido> spec = Specification
-                .where(PedidoSpecifications.tieneEstado(estado))
-                .and(PedidoSpecifications.fechaDesde(desde))
-                .and(PedidoSpecifications.fechaHasta(hasta));
-        return pedidoRepository.findAll(spec, Sort.by(Sort.Direction.DESC, "fecha"))
-                .stream()
-                .map(this::convertirAResponse)
-                .toList();
-    }
+        public List<PedidoResponse> listarTodos(EstadoPedido estado, LocalDate desde, LocalDate hasta) {
+     
+            if (desde != null && hasta != null && desde.isAfter(hasta)) {
+                throw new ReglaNegocioException(
+                        "La fecha inicial no puede ser posterior a la fecha final"
+                );
+            }
+     
+        	Specification<Pedido> spec = Specification
+                    .where(PedidoSpecifications.tieneEstado(estado))
+                    .and(PedidoSpecifications.fechaDesde(desde))
+                    .and(PedidoSpecifications.fechaHasta(hasta));
+            return pedidoRepository.findAll(spec, Sort.by(Sort.Direction.DESC, "fecha"))
+     
+            		.stream()
+                    .map(this::convertirAResponse)
+                    .toList();
+        }
     // 3. Consultar detalle de un pedido (valida que si es cliente sea el dueño)
     @Transactional(readOnly = true)
     public PedidoResponse obtenerPorId(Long pedidoId, Usuario usuarioAutenticado) {
@@ -244,15 +252,54 @@ public class PedidoService {
     }
     // 4. Cambiar estado (Admin/Cajero)
     @Transactional
-    public PedidoResponse actualizarEstado(Long pedidoId, EstadoPedido nuevoEstado) {
+    public PedidoResponse actualizarEstado(
+            Long pedidoId,
+            EstadoPedido nuevoEstado
+    ) {
         Pedido pedido = pedidoRepository.findById(pedidoId)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Pedido no encontrado: " + pedidoId));
-        if (pedido.getEstado() == EstadoPedido.CANCELADO) {
-            throw new ReglaNegocioException("No se puede modificar un pedido cancelado");
+                .orElseThrow(() ->
+                        new RecursoNoEncontradoException(
+                                "Pedido no encontrado: " + pedidoId
+                        )
+                );
+    
+        EstadoPedido estadoActual = pedido.getEstado();
+    
+        if (estadoActual == EstadoPedido.CANCELADO) {
+            throw new ReglaNegocioException(
+                    "No se puede modificar un pedido cancelado"
+            );
         }
-        pedido.setEstado(nuevoEstado);
-        return convertirAResponse(pedidoRepository.save(pedido));
+    
+        if (estadoActual == EstadoPedido.PAGADO) {
+            throw new ReglaNegocioException(
+                    "No se puede modificar un pedido pagado"
+            );
+        }
+
+    boolean transicionValida =
+            (estadoActual == EstadoPedido.PENDIENTE
+                    && nuevoEstado == EstadoPedido.EN_PROCESO)
+            ||
+            (estadoActual == EstadoPedido.EN_PROCESO
+                    && nuevoEstado == EstadoPedido.LISTO);
+
+    if (!transicionValida) {
+        throw new ReglaNegocioException(
+                "No se puede cambiar el pedido de "
+                        + estadoActual
+                        + " a "
+                        + nuevoEstado
+        );
     }
+
+    pedido.setEstado(nuevoEstado);
+
+    return convertirAResponse(
+            pedidoRepository.save(pedido)
+    );
+}
+
     // 5. Cancelar pedido (devuelve el stock a los productos)
     @Transactional
     public PedidoResponse cancelarPedido(Long pedidoId, Usuario usuarioAutenticado) {
@@ -268,6 +315,9 @@ public class PedidoService {
         if (pedido.getEstado() == EstadoPedido.PAGADO) {
             throw new ReglaNegocioException("No se puede cancelar un pedido que ya fue pagado");
         }
+        if (pedido.getEstado() == EstadoPedido.LISTO) {
+            throw new ReglaNegocioException("No se puede cancelar un pedido que ya está listo");
+        }
         // Devolvemos el stock a cada producto
         for (DetallePedido detalle : pedido.getDetalles()) {
             Producto producto = detalle.getProducto();
@@ -280,15 +330,36 @@ public class PedidoService {
     // 6. Confirmar pago y cerrar pedido
     @Transactional
     public PedidoResponse pagarPedido(Long pedidoId) {
+    
         Pedido pedido = pedidoRepository.findById(pedidoId)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Pedido no encontrado: " + pedidoId));
+                .orElseThrow(() ->
+                        new RecursoNoEncontradoException(
+                                "Pedido no encontrado: " + pedidoId
+                        )
+                );
+    
         if (pedido.getEstado() == EstadoPedido.CANCELADO) {
-            throw new ReglaNegocioException("No se puede pagar un pedido cancelado");
+            throw new ReglaNegocioException(
+                    "No se puede pagar un pedido cancelado"
+            );
         }
+    
         if (pedido.getEstado() == EstadoPedido.PAGADO) {
-            throw new ReglaNegocioException("El pedido ya se encuentra pagado");
+            throw new ReglaNegocioException(
+                    "El pedido ya se encuentra pagado"
+            );
         }
+    
+        if (pedido.getEstado() != EstadoPedido.LISTO) {
+            throw new ReglaNegocioException(
+                    "Solo se puede pagar un pedido que esté LISTO"
+            );
+        }
+    
         pedido.setEstado(EstadoPedido.PAGADO);
-        return convertirAResponse(pedidoRepository.save(pedido));
+    
+        return convertirAResponse(
+                pedidoRepository.save(pedido)
+        );
     }
 }
